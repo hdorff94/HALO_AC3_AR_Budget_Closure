@@ -134,8 +134,8 @@ if __name__=="__main__":
     # from run_grid_on_halo as well as plots and 
     
     # Relevant specifications for running , those are default values
-    calc_hmp=True
-    calc_hmc=False
+    calc_hmp=False
+    calc_hmc=True
     do_plotting=True
     synthetic_campaign=False
     ar_of_day=["AR_entire_2"]#["AR3"]#"AR_entire"#"#internal"#"AR_entire"
@@ -143,17 +143,17 @@ if __name__=="__main__":
     #campaign_name="North_Atlantic_Run"#"Second_Synthetic_Study"
     
     flights_to_analyse={#"RF02":"20220312",
-                            #"RF03":"20220313",
+                        #"RF03":"20220313",
                             #"RF04":"20220314",
-                            #"RF05":"20220315",
-                            "RF06":"20220316",
+                        #"RF05":"20220315",
+                            #"RF06":"20220316",
                             #"RF07":"20220320"
-                            
+                            "RF16":"20220410"
                             #"RF10":"20161013"
                             }        
     use_era=True
-    use_carra=False
-    use_icon=False
+    use_carra=True
+    use_icon=True
     flights=[*flights_to_analyse.keys()]
     do_instantaneous=False
 
