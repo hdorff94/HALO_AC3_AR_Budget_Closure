@@ -164,7 +164,10 @@ Moisture_CONV=Budgets.Moisture_Convergence(cmpgn_cls,flight,config_file,
 ###############################################################################
 relevant_sector_sondes
 Moisture_CONV.perform_entire_sonde_ac3_divergence_calcs(Dropsondes,
-                                                        relevant_sector_sondes)
+                                                        relevant_sector_sondes,
+                                                        with_uncertainty=True)
+## For uncertainty in retrieval
+#https://stackoverflow.com/questions/22381497/python-scikit-learn-linear-model-parameter-standard-error
 Moisture_CONV.vertically_integrated_divergence()
 print("Divergence:",Moisture_CONV.integrated_divergence)
 ###############################################################################
