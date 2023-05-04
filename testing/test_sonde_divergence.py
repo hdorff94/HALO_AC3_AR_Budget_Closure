@@ -160,6 +160,7 @@ cmpgn_cls=flightcampaign.HALO_AC3(is_flight_campaign=True,
 
 Moisture_CONV=Budgets.Moisture_Convergence(cmpgn_cls,flight,config_file,
                  grid_name="Real_Sondes",sector_types=[sector_to_plot],
+                 ar_of_day=ar_of_day,
                  do_instantan=False)
 ###############################################################################
 relevant_sector_sondes
@@ -174,3 +175,85 @@ print("Divergence:",Moisture_CONV.integrated_divergence)
 relevant_sondes=relevant_sector_sondes["warm"]
 
 sonde_sector_times=sonde_times_series.iloc[relevant_sondes].index
+
+plot_tests=True
+###############################################################################
+#def plot_haloac3_atmospheric_moist_trans_divergence(Moisture_CONV,ICON_Moisture_CONV,
+#                                                    Retr_Moisture_CONV,sector_to_plot,
+#                                                   z_height_icon,z_height_retrieval,
+#                                                   plot_sondes=True,
+#                                                   do_plot_icon=True):
+if plot_tests:
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    matplotlib.rcParams.update({"font.size":20})
+    divergence_plot=plt.figure(figsize=(16,9))
+    ax1=divergence_plot.add_subplot(121)
+    ax2=divergence_plot.add_subplot(122)
+    # Mass divergence
+    ax1.plot(Moisture_CONV.div_scalar_mass[sector_to_plot]["val"].values,
+         Moisture_CONV.div_scalar_mass[sector_to_plot].index.values/1000,
+         color="darkgreen",lw=3,label="Dropsondes")
+    ax1.fill_betweenx(
+        y=Moisture_CONV.div_scalar_mass[sector_to_plot].index.values/1000,
+        x1=Moisture_CONV.div_scalar_mass[sector_to_plot]["val"].values-\
+            Moisture_CONV.div_scalar_mass[sector_to_plot]["unc"].values,
+        x2=Moisture_CONV.div_scalar_mass[sector_to_plot]["val"].values+\
+            Moisture_CONV.div_scalar_mass[sector_to_plot]["unc"].values,
+        color="lightgreen",alpha=0.5)
+    ax1.set_xlim([-2.5e-4,2.5e-4])
+    ax1.set_xticks([-2.5e-4,-1e-4,0,1e-4,2.5e-4])
+    ax1.set_xticklabels(["-2.5e-4","-1e-4","0","1e-4","2.5e-4"])
+    ax1.text(x=0.6,y=0.66,s="Vertical Integral\nBudget Contribution:",
+             transform=ax1.transAxes,color="k")
+    ax1.text(x=0.7,y=0.60,s=str(np.round(-1*Moisture_CONV.integrated_divergence[\
+        sector_to_plot]["mass_div"],2))+\
+         " $\mathrm{mmh}^{-1}$",transform=ax1.transAxes,color="darkgreen")
+    ax1.set_xlabel("Mass Divergence ($\mathrm{gkg}^{-1}\mathrm{s}^{-1}$)")
+    ax1.set_ylabel("Height (km)")
+    ax1.axvline(x=0,ls="--",lw=3,color="grey")
+    ax1.set_ylim([0,10])
+    for axis in ['bottom','left']:
+        ax1.spines[axis].set_linewidth(3)
+    ax1.spines['right'].set_visible(False)
+    ax1.spines['top'].set_visible(False)
+    ax1.yaxis.set_tick_params(width=2,length=6)
+    ax1.xaxis.set_tick_params(width=2,length=6)
+    ax1.legend(loc="upper right",fontsize=22,bbox_to_anchor=[1.15,1.0])
+    # moisture advection
+    ax2.plot(Moisture_CONV.adv_q_calc[sector_to_plot]["val"].values,
+         Moisture_CONV.adv_q_calc[sector_to_plot].index.values/1000,
+         color="darkgreen",lw=3)
+    ax2.fill_betweenx(y=Moisture_CONV.adv_q_calc[sector_to_plot].index.values/1000,
+        x1=Moisture_CONV.adv_q_calc[sector_to_plot]["val"].values-\
+        Moisture_CONV.adv_q_calc[sector_to_plot]["unc"].values,
+        x2=Moisture_CONV.adv_q_calc[sector_to_plot]["val"].values+\
+        Moisture_CONV.adv_q_calc[sector_to_plot]["unc"].values,
+         color="lightgreen",alpha=0.5)
+    
+    ax2.set_ylim([0,10])
+    ax2.set_xlim([-2.5e-4,2.5e-4])
+    ax2.set_xticks([-2.5e-4,-1e-4,0,1e-4,2.5e-4])
+    ax2.set_xticklabels(["-2.5e-4","-1e-4","0","1e-4","2.5e-4"])
+    ax2.axvline(x=0,ls="--",lw=3,color="grey")
+    ax2.set_xlabel("Moisture Advection ($\mathrm{gkg}^{-1}\mathrm{s}^{-1}$)")
+    for axis in ['bottom','left']:
+        ax2.spines[axis].set_linewidth(3)
+    ax2.set_yticklabels("")
+    ax2.text(x=0.7,y=0.6,s=str(np.round(-1*Moisture_CONV.integrated_divergence[\
+                sector_to_plot]["q_ADV"],2))+" $\mathrm{mmh}^{-1}$",
+             transform=ax2.transAxes,color="darkgreen")
+    
+    ax2.spines['right'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
+    ax2.yaxis.set_tick_params(width=2,length=6)
+    ax2.xaxis.set_tick_params(width=2,length=6)
+    plt.suptitle("Sonde Moisture transport divergence "+flight[0]+\
+                 " "+ar_of_day+" "+sector_to_plot)
+    sns.despine(offset=10)
+    plt.subplots_adjust(wspace=0.3)
+    #fig_name=flight[0]+"_"+ar_of_day+"_"+sector_to_plot+\
+    #    "_sonde_moist_transp_divergence.png"
+    #divergence_plot.savefig(plot_path+fig_name,dpi=300,bbox_inches="tight")
+    #print("Figure saved as:",plot_path+fig_name)
