@@ -109,9 +109,7 @@ def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
         Dropsondes["Lat"].iloc[relevant_sondes_dict["warm_sector"]["in"]],
         marker="v",s=100,color="orange",edgecolor="k",
         transform=ccrs.PlateCarree())
-    # Specify frontal sectors for sondes
-    if flight[0]=="RF05" and ar_of_day=="AR_entire_1":
-        ax1.scatter(Dropsondes["Lon"].iloc[internal_sondes_dict["warm"]],
+    ax1.scatter(Dropsondes["Lon"].iloc[internal_sondes_dict["warm"]],
             Dropsondes["Lat"].iloc[internal_sondes_dict["warm"]],
            marker="o",s=100,color="grey",edgecolor="k",transform=ccrs.PlateCarree())
         
