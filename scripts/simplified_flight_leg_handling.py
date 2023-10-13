@@ -18,7 +18,8 @@ def simplified_run_grid_main(config_file_path="",
          ######################################################################
          track_type="internal",
          merge_all_legs=False,
-         pick_legs=["inflow","internal","outflow"]):
+         pick_legs=["inflow","internal","outflow"],
+         open_calibrated=True):
     
     import flightcampaign
     ###############################################################################
@@ -87,7 +88,9 @@ def simplified_run_grid_main(config_file_path="",
 
     else:
         print("No data is plotted.")
-        
+       
+    print("Main path:",config_file["Data_Paths"]["campaign_path"])
+    
     ac3=flightcampaign.HALO_AC3(is_flight_campaign=True,
                     major_path=config_file["Data_Paths"]["campaign_path"],
                     aircraft="HALO",instruments=["radar","dropsondes","sonde"])
@@ -202,14 +205,19 @@ def simplified_run_grid_main(config_file_path="",
    
     # Measurement instruments if needed
     HAMP_cls=Instruments.HAMP(HALO_cls)
-    HAMP_cls.open_processed_hamp_data(open_calibrated=False,
+    HAMP_cls.open_processed_hamp_data(open_calibrated=open_calibrated,
                             newest_version=True)
-    mwr=HAMP_cls.processed_hamp_ds
-    mwr=mwr.rename({"TB":"T_b"})
+    
     RADAR_cls=Instruments.RADAR(HALO_cls)
-    RADAR_cls.open_processed_radar_data(reflectivity_is_calibrated=False)
+    RADAR_cls.open_processed_radar_data(reflectivity_is_calibrated=open_calibrated)
             
-    radar_ds=RADAR_cls.processed_radar_ds
+    if not open_calibrated:
+        radar_ds=RADAR_cls.processed_radar_ds
+        mwr=HAMP_cls.processed_hamp_ds
+    else:
+        radar_ds=RADAR_cls.calib_processed_radar_ds
+        mwr=HAMP_cls.calib_processed_hamp_ds
+    mwr=mwr.rename({"TB":"T_b"})
     radar={}
     radar["Reflectivity"]=pd.DataFrame(data=np.array(
                                     radar_ds["dBZg"].values[:]),
@@ -220,6 +228,8 @@ def simplified_run_grid_main(config_file_path="",
                             index=pd.DatetimeIndex(
                             np.array(radar_ds.time[:])),
                             columns=np.array(radar_ds["height"][:]))
+    
+    print(radar["Reflectivity"].index)
     radar["Position"]=halo_df.copy()
     del radar_ds
     # Cut dataset to AR core cross-section
@@ -229,6 +239,7 @@ def simplified_run_grid_main(config_file_path="",
                                                 ar_of_day, flight[0], 
                                                 halo_df,radar,
                                                 device="radar")
+           
             #radiometer
             halo_df,mwr,ar_of_day=ERA5_on_HALO.cut_halo_to_AR_crossing(
                                                 ar_of_day, flight[0], 
