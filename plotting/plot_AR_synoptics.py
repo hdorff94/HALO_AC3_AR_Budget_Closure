@@ -205,8 +205,8 @@ def main():
     ax1.gridlines()
     ax2.gridlines()
     
-    ax1.set_extent([-40,25,55,90]) 
-    ax2.set_extent([-40,25,55,90]) 
+    ax1.set_extent([-40,25,55,85]) 
+    ax2.set_extent([-40,25,55,85]) 
     
     ax1.text(-0.07,0.95,"a)",fontsize=18,transform=ax1.transAxes)
     #calc_time=era5.hours[i]
@@ -334,8 +334,33 @@ def main():
     ax2.plot(plot_halo_df["longitude"],
             plot_halo_df["latitude"],
             lw=2,ls="-",color="k",transform=ccrs.PlateCarree(),zorder=11)
+    ### handle gridlines
+    #-------------------------------------------------------------------------#
+    import matplotlib.ticker as mticker
+    gls1 = ax1.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, 
+                      x_inline=False, y_inline=False)
+    gls1.ylocator = mticker.FixedLocator([60,65,70,75,80,85])
+    gls1.xlocator = mticker.FixedLocator([-60,60])
+    gls2 = ax2.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, 
+                      x_inline=False, y_inline=False)
+    gls2.ylocator = mticker.FixedLocator([60,65,])
+    gls2.xlocator = mticker.FixedLocator([-60,60])
+    gls1.bottom_labels      = False
+    gls1.right_labels       = False
+    gls1.top_labels         = True
+    gls2.right_labels       = True
+    gls2.left_labels        = False
+    gls2.bottom_labels      = False
+    #gls2.ylocator = mticker.FixedLocator([80,85])
+    gls1.xlabel_style = {'size': 16}
+    gls1.ylabel_style = {'size': 16}
+    gls2.xlabel_style = {'size': 16}
+    gls2.ylabel_style = {'size': 16}
+    
+    #-------------------------------------------------------------------------#    
+    
     plt.subplots_adjust(wspace=0.15,hspace=-0.3)
-    fig_name="AR_RF05_synoptic_conditions_"+hour_str+"_UTC.png"
+    fig_name="Fig01_AR_RF05_synoptic_conditions_"+hour_str+"_UTC.png"
     plot_path=os.getcwd()+"/../plots/"
     map_fig.savefig(plot_path+fig_name,dpi=600,bbox_inches="tight")
     print("Figure saved as:", plot_path+fig_name)

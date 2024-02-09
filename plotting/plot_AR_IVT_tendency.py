@@ -15,12 +15,13 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+import glob
 import os
 import sys
 
 def importer():
     paths_dict={}
-    
+    paths_dict["current_path"]=os.getcwd()
     paths_dict["actual_working_path"]=os.getcwd()+\
         "/../../Synthetic_Airborne_Arctic_ARs/"
     os.chdir(paths_dict["actual_working_path"]+"/config/")
@@ -65,6 +66,8 @@ def main():
     import flightcampaign
     if "data_config" in sys.modules:
         import data_config
+    
+    save_in_manuscript_path=False
     config_file=data_config.load_config_file(
                     paths_dict["airborne_data_importer_path"],
                         "data_config_file")
@@ -113,7 +116,7 @@ def main():
     met_var_dict["colormap"]    = {"IWV":"density","IVT":"ocean_r",
                                    "IVT_v":"speed","IVT_u":"speed"}
     met_var_dict["levels"]      = {"IWV":np.linspace(10,25,101),
-                                   "IVT":np.linspace(50,450,301),
+                                   "IVT":np.linspace(100,500,301),
                                    "IVT_v":np.linspace(0,500,101),
                                    "IVT_u":np.linspace(0,500,101)}
     met_var_dict["units"]       = {"IWV":"(kg$\mathrm{m}^{-2}$)",
@@ -124,7 +127,7 @@ def main():
         
     col_no=len(flights)
     row_no=1
-    projection=ccrs.AzimuthalEquidistant(central_longitude=-5.0,central_latitude=70)
+    projection=ccrs.AzimuthalEquidistant(central_longitude=-2.0,central_latitude=72)
     fig,axs=plt.subplots(row_no,col_no,sharex=True,sharey=True,figsize=(12,16),
                              subplot_kw={'projection': projection})
     key=0
@@ -145,10 +148,26 @@ def main():
     fig_labels=["(a)","(b)","(c)"]
     gls=[None,None,None]
     campaign=[*flight_dates.keys()][0]
-    campaign_path="C://Users/u300737/Desktop/PhD_UHH_WIMI/Work/GIT_Repository/"+\
-              "hamp_processing_py/hamp_processing_python/Flight_Data/"+\
-                  campaign+"/"
-                                               
+    campaign_path="C://Users/u300737/Desktop/Desktop_alter_Rechner/"+\
+                    "PhD_UHH_WIMI/Work/GIT_Repository/"+"hamp_processing_py/"+\
+                        "hamp_processing_python/Flight_Data/"+campaign+"/"
+    
+    import cartopy.io.img_tiles as cimgt
+
+    class StadiaStamen(cimgt.Stamen):
+        def _image_url(self, tile):
+            x,y,z = tile
+            url = f"https://tiles.stadiamaps.com/tiles/stamen_terrain_background/{z}/{x}/{y}.jpg?api_key=0963bb5f-6e8c-4978-9af0-4cd3a2627df9"
+            return url
+    stamen_terrain = StadiaStamen('terrain-background')
+    
+    amsr2_sea_ice_path=campaign_path+\
+        "\\sea_ice\\"
+    # sea ice maps
+    orig_map = plt.cm.get_cmap('Blues')
+    # reversing the original colormap using reversed() function
+    reversed_map = orig_map.reversed() 
+
     for col in range(col_no):
         flight_date= [*flight_dict.keys()][key]
         print("Flight date",flight_date)
@@ -160,6 +179,7 @@ def main():
                             campaign,campaign_path)
         HALO_Devices_cls=measurement_instruments_ql.HALO_Devices(cfg_dict)
         Sondes_cls=measurement_instruments_ql.Dropsondes(HALO_Devices_cls)
+        Sondes_cls.open_all_sondes_as_dict()
         Sondes_cls.calc_integral_variables(integral_var_list=["IWV","IVT"])
         sonde_data=Sondes_cls.sonde_dict
     
@@ -167,7 +187,6 @@ def main():
         # Aircraft   
         haloac3.load_AC3_bahamas_ds(flight)
         halo_dict=haloac3.bahamas_ds
-        print(halo_dict)
         if isinstance(halo_dict,pd.DataFrame):
             halo_df=halo_dict.copy() 
         elif isinstance(halo_dict,xr.Dataset):
@@ -191,80 +210,110 @@ def main():
         era_ds["IVT_v"]=era_ds["p72.162"]
         era_ds["IVT_u"]=era_ds["p71.162"]
         era_ds["IVT"]=np.sqrt(era_ds["IVT_u"]**2+era_ds["IVT_v"]**2)
+        era_ds["IVT"]=era_ds["IVT"].where(era_ds.IVT>100)
         # Make Grid but adapt it for specific subplot
-        
         gls[key] = axs[col].gridlines(crs=ccrs.PlateCarree(), draw_labels=True, 
                           x_inline=False, y_inline=False)
         gls[key].bottom_labels = False
         gls[key].ylocator = mticker.FixedLocator([70,75,80,85])
         gls[key].xlocator = mticker.FixedLocator([-60,0,60])
-        #gls[key].xlocator = mticker.FixedLocator([-95,95])
         if key==0:
            gls[key].right_labels = False
            gls[key].top_labels = True
         elif key==1:
             gls[key].right_labels = True
             gls[key].left_labels = False
-            #gls[key].xlocator = mticker.FixedLocator([-85,,85])
             gls[key].ylocator = mticker.FixedLocator([80,85])
         elif key==2:
             gls[key].left_labels = False
             gls[key].top_labels = False
             gls[key].right_labels=False
-            #gls[key].ylocator= mticker.FixedLocator([60,65])
-            #gls[key].xlo
+            
         gls[key].xlabel_style = {'size': 18}
         gls[key].ylabel_style = {'size': 18}
- 
+        #ICON box-------------------------------------------------------------#
+        icon_box_lon=[np.linspace(30,-20, 1000), np.array([-20, -20]),
+                    np.linspace(-20, 30, 1000), np.array([30.0, 30.0])]
+        icon_box_lat=[np.linspace(70.5, 70.5,1000),np.array([70.5,85.5]),
+                  np.linspace(85.5, 85.5, 1000), np.array([85.5, 70.5])]          
+        for edge_lon, edge_lat in  \
+                        zip(icon_box_lon, icon_box_lat):
+            axs[col].plot(edge_lon, edge_lat,
+                     color="grey", lw=4,ls="-", 
+                     transform=ccrs.PlateCarree(),
+                     zorder=11)
+            axs[col].plot(edge_lon, edge_lat,
+                     color="orange", lw=2,ls="-.", 
+                     transform=ccrs.PlateCarree(),
+                     zorder=11)
+            icon_legend_patch_name="ICON-2km domain"
+        #----------------------------------------------------------------------#
+        # Plot Geomap
+        axs[col].add_image(stamen_terrain, 1)
+        # Plot sea ice
+        sea_ice_file_list=glob.glob(amsr2_sea_ice_path+"*"+flight_date+"*.nc")
+        sea_ice_ds=xr.open_dataset(sea_ice_file_list[0])
+        seaice=sea_ice_ds["seaice"]                                       
+        # Sea ice
+        axs[col].pcolormesh(seaice.lon, seaice.lat,np.array(seaice[:]), 
+                transform=ccrs.PlateCarree(), cmap=reversed_map)
+    
+        # Create white overlay for less strong colors
+        x=np.linspace(-90,90,41)
+        y=np.linspace(55,90,93)
+        x_grid,y_grid=np.meshgrid(x,y)
+        white_overlay= np.zeros((41,93))+0.3
+        axs[col].contourf(x_grid,y_grid,white_overlay.T,cmap="Greys",vmin=0,vmax=1,
+                 transform=ccrs.PlateCarree(),alpha=0.6)
+        
         # Plot IVT
         C1=axs[col].contourf(era_ds["longitude"],era_ds["latitude"],
                 era_ds[met_var_dict["ERA_name"][meteo_var]][era_index,:,:],
                 levels=met_var_dict["levels"][meteo_var],extend="max",
                 transform=ccrs.PlateCarree(),
-                cmap=met_var_dict["colormap"][meteo_var],alpha=0.95,
-                zorder=0)
+                cmap=met_var_dict["colormap"][meteo_var],alpha=0.6,
+                zorder=6)
+        
         # Plot surface presure
         C_p=axs[col].contour(era_ds["longitude"],era_ds["latitude"],
                                 era_ds["msl"][era_index,:,:]/100,
                                 levels=np.linspace(950,1050,11),
                                 linestyles="-.",linewidths=2,
                                 colors="grey",transform=ccrs.PlateCarree(),
-                                zorder=1)
+                                zorder=8)
         axs[col].clabel(C_p, inline=True,inline_spacing=2,
                         fmt='%03d',fontsize=10)
         # mean sea ice cover
-        C_i=axs[col].contour(era_ds["longitude"],era_ds["latitude"],
-                    era_ds["siconc"][era_index,:,:]*100,levels=[15,85],
-                    linestyles="-",linewidths=[1.5,3],
-                    colors=sea_ice_colors,transform=ccrs.PlateCarree())
-
-        axs[col].clabel(C_i, inline=True, inline_spacing=2,
-                        fmt='%02d %%',fontsize=12)
+        #C_i=axs[col].contour(era_ds["longitude"],era_ds["latitude"],
+        #            era_ds["siconc"][era_index,:,:]*100,levels=[15,85],
+        #            linestyles="-",linewidths=[1.5,3],
+        #            colors=sea_ice_colors,transform=ccrs.PlateCarree())
+        #
+        #axs[col].clabel(C_i, inline=True, inline_spacing=2,
+        #                fmt='%02d %%',fontsize=12)
                 
                 
-        axs[col].coastlines(resolution="50m")
-        axs[col].set_extent([-20,25,65,90])
+        axs[col].coastlines(resolution="50m",zorder=9)
+        axs[col].set_extent([-20,27,67.5,87.5])
         # Date and Timestep
-        axs[col].text(-14, 66.5, ar_label[flight_date]+\
+        axs[col].text(-18.35, 66.5, ar_label[flight_date]+\
                       " "+str(era_index)+" UTC",
                       fontsize=14,transform=ccrs.PlateCarree(),
                       color="k",bbox=dict(
                           facecolor='lightgrey',edgecolor="black"),zorder=10)
-           
         axs[col].plot(halo_df["longitude"],
                              halo_df["latitude"],
-                             color="white",lw=4,
+                             color="white",lw=5,
                              transform=ccrs.PlateCarree(),zorder=10)
         axs[col].plot(halo_df["longitude"],
                              halo_df["latitude"],lw=2,
-                             #color="indianred",
                              color="k",
                              transform=ccrs.PlateCarree(),zorder=10)
         
         if col==0:
             axs[col].annotate('HALO track',
-                             xy=(0, -0.175), xycoords='axes fraction', 
-                             xytext=(0.2, -0.185),fontsize=18,
+                             xy=(0, -0.275), xycoords='axes fraction', 
+                             xytext=(0.2, -0.285),fontsize=18,
                              arrowprops=dict(arrowstyle="-",lw=2, color='k'))    
 
         # AR label (AR1)
@@ -285,7 +334,7 @@ def main():
                              edgecolor="k",lw=1,
                              scale=600,scale_units="inches",
                              pivot="mid",width=0.015,
-                             transform=ccrs.PlateCarree(),zorder=6)
+                             transform=ccrs.PlateCarree(),zorder=10)
         # Add dropsondes
         sonde_shapes=["v","s"]
         for sonde in sonde_data["launch_time"].keys():
@@ -294,7 +343,7 @@ def main():
             scat=axs[col].scatter(release_lon,release_lat,marker=sonde_shapes[1],
                        s=300,edgecolors="k",c=sonde_data["IVT"].loc[sonde],
                        cmap="BuGn",vmin=0, vmax=500,
-                       transform=ccrs.PlateCarree(), zorder=8)
+                       transform=ccrs.PlateCarree(), zorder=9)
             scat2=axs[col].scatter(release_lon,release_lat,marker=sonde_shapes[0],
                        s=100,edgecolors="k",c=sonde_data["IWV"].loc[sonde],
                        cmap="BuPu",vmin=0, vmax=20,
@@ -305,7 +354,6 @@ def main():
             axs[col].quiverkey(quiver,0.36,0.875,q_typ,
                     label=str(q_typ)+' $\mathrm{kgm}^{-1}\mathrm{s}^{-1}$',
                     coordinates="axes",labelpos="E",fontproperties={"size":18})
-
         key+=1
         # Adjust the location of the subplots on the page to make room for the colorbar
     
@@ -314,19 +362,20 @@ def main():
         # Add a colorbar axis at the bottom of the graph
     cbar_ax = fig.add_axes([0.15, 0.3, 0.7, 0.01])
     cbar=fig.colorbar(C1, cax=cbar_ax,extend="max",orientation="horizontal")
-    cbar.set_ticks([50,150,250,350,450])
+    cbar.set_ticks([100,250,500])
     cbar_ax.text(0.4,-3.5,meteo_var+" "+met_var_dict["units"][meteo_var],
                  fontsize=18,transform=cbar_ax.transAxes)
-    cbar2_ax=fig.add_axes([0.68,0.26,0.1,0.01])
+    cbar2_ax=fig.add_axes([0.6,0.28,0.1,0.01])
     cbar2 = fig.colorbar(scat2,cax=cbar2_ax,
                          extend="max",orientation="horizontal")
     cbar2.set_label("IWV ($\mathrm{kg}\mathrm{m}^{-2}$)",fontsize=16)
         
-    #if not save_in_manuscript_path:
-    fig_path=os.getcwd()+"/"#paths_dict["airborne_plotting_module_path"]
-        #else:
+    if not save_in_manuscript_path:
+        fig_path=paths_dict["current_path"]+"/../plots/"#paths_dict["airborne_plotting_module_path"]
+    else:
+        pass
         #    fig_path=paths_dict["manuscript_path"]
-    fig_name="Fig_Apx_AR_events_HALO_AC3_overview.png"
+    fig_name="Fig02_AR_RF05_RF06_tendency.png"
     fig.savefig(fig_path+fig_name,dpi=300,bbox_inches="tight")
     print("Figure saved as:",fig_path+fig_name)
     
