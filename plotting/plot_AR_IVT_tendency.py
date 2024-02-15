@@ -132,8 +132,8 @@ def main():
                              subplot_kw={'projection': projection})
     key=0
     era_index_dict={"20220313":16,
-                    "20220315":16,
-                    "20220316":14,
+                    "20220315":12,
+                    "20220316":13,
                     "20220410":14,
                     }
     ar_label={"20220313":"13 March 2022",
