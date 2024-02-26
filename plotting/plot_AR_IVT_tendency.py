@@ -98,7 +98,7 @@ def main():
     
     #%% Plot the map
     import matplotlib
-    matplotlib.rcParams.update({"font.size":20})
+    matplotlib.rcParams.update({"font.size":22})
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mticker
     import cartopy
@@ -124,16 +124,74 @@ def main():
                                    "IVT_v":"(kg$\mathrm{m}^{-1}\mathrm{s}^{-1}$)",
                                    "IVT_u":"(kg$\mathrm{m}^{-1}\mathrm{s}^{-1}$)"}
                 
-        
+    leg_dict={}
+    # RF05
+    leg_dict["RF05_AR_entire_1"]={}
+    leg_dict["RF05_AR_entire_1"]["inflow_times"]=\
+        ["2022-03-15 10:11","2022-03-15 11:13"]
+    leg_dict["RF05_AR_entire_1"]["internal_times"]=\
+        ["2022-03-15 11:18","2022-03-15 12:14"]
+    leg_dict["RF05_AR_entire_1"]["outflow_times"]=\
+        ["2022-03-15 12:20","2022-03-15 13:15"]
+    leg_dict["RF05_AR_entire_2"]={}
+    leg_dict["RF05_AR_entire_2"]["inflow_times"]=\
+        ["2022-03-15 14:30","2022-03-15 15:25"]
+    leg_dict["RF05_AR_entire_2"]["internal_times"]=\
+        ["2022-03-15 13:20","2022-03-15 14:25"]
+    leg_dict["RF05_AR_entire_2"]["outflow_times"]=\
+        ["2022-03-15 12:20","2022-03-15 13:15"]
+    #"RF06":
+    leg_dict["RF06_AR_entire_1"]={}
+    
+    leg_dict["RF06_AR_entire_1"]["inflow_times"]=\
+        ["2022-03-16 10:45","2022-03-16 11:21"]
+    leg_dict["RF06_AR_entire_1"]["internal_times"]=\
+        ["2022-03-16 11:25","2022-03-16 12:10"]
+    leg_dict["RF06_AR_entire_1"]["outflow_times"]=\
+        ["2022-03-16 12:15","2022-03-16 12:50"]
+    
+    leg_dict["RF06_AR_entire_2"]={}
+    leg_dict["RF06_AR_entire_2"]["inflow_times"]=\
+        ["2022-03-16 12:12","2022-03-16 12:55"]
+    leg_dict["RF06_AR_entire_2"]["internal_times"]=\
+        ["2022-03-16 12:58","2022-03-16 13:40"]
+    leg_dict["RF06_AR_entire_2"]["outflow_times"]=\
+        ["2022-03-16 13:45","2022-03-16 14:18"]
+    # Dropsondes of sector
+    relevant_sondes={}
+    relevant_sondes["RF05_AR_entire_1"]={}
+    relevant_sondes["RF05_AR_entire_1"]["sondes_no"]=[0,1,2,3,9,10,11,12]
+    relevant_sondes["RF05_AR_entire_1"]["left_edge"]=[3,12]
+    relevant_sondes["RF05_AR_entire_1"]["right_edge"]=[0,9]
+    relevant_sondes["RF05_AR_entire_1"]["internal_sondes_no"]=[7,13]
+    
+    relevant_sondes["RF05_AR_entire_2"]={}
+    relevant_sondes["RF05_AR_entire_2"]["sondes_no"]=[9,10,11,12,15,16,17,18]
+    relevant_sondes["RF05_AR_entire_2"]["internal_sondes_no"]= [13,22]
+    relevant_sondes["RF05_AR_entire_2"]["left_edge"]         = [12,18]
+    relevant_sondes["RF05_AR_entire_2"]["right_edge"]        = [9,15]
+    
+    relevant_sondes["RF06_AR_entire_1"]={}
+    relevant_sondes["RF06_AR_entire_1"]["sondes_no"]          = [0,1,2,8,9,10]
+    relevant_sondes["RF06_AR_entire_1"]["internal_sondes_no"] = [7,22]
+    relevant_sondes["RF06_AR_entire_1"]["left_edge"]          = [2,10]
+    relevant_sondes["RF06_AR_entire_1"]["right_edge"]         = [0,8]
+    
+    relevant_sondes["RF06_AR_entire_2"]={}
+    relevant_sondes["RF06_AR_entire_2"]["sondes_no"]          = [8,9,16,17]
+    relevant_sondes["RF06_AR_entire_2"]["internal_sondes_no"] = [14,22]
+    relevant_sondes["RF06_AR_entire_2"]["left_edge"]          = [9,17]
+    relevant_sondes["RF06_AR_entire_2"]["right_edge"]         = [8,16]
     col_no=len(flights)
     row_no=1
-    projection=ccrs.AzimuthalEquidistant(central_longitude=-2.0,central_latitude=72)
-    fig,axs=plt.subplots(row_no,col_no,sharex=True,sharey=True,figsize=(12,16),
-                             subplot_kw={'projection': projection})
+    
+    projection=ccrs.AzimuthalEquidistant(central_longitude=-2.0,
+                                         central_latitude=72)
+    plot_all_sectors=True
     key=0
     era_index_dict={"20220313":16,
-                    "20220315":12,
-                    "20220316":13,
+                    "20220315":[12,14],
+                    "20220316":[11,13],
                     "20220410":14,
                     }
     ar_label={"20220313":"13 March 2022",
@@ -144,13 +202,6 @@ def main():
     pressure_color="purple"##"royalblue"
     sea_ice_colors=["orange",#"gold",
                     "saddlebrown"]#["mediumslateblue", "indigo"]
-    # Aircraft data
-    fig_labels=["(a)","(b)","(c)"]
-    gls=[None,None,None]
-    campaign=[*flight_dates.keys()][0]
-    campaign_path="C://Users/u300737/Desktop/Desktop_alter_Rechner/"+\
-                    "PhD_UHH_WIMI/Work/GIT_Repository/"+"hamp_processing_py/"+\
-                        "hamp_processing_python/Flight_Data/"+campaign+"/"
     
     import cartopy.io.img_tiles as cimgt
 
@@ -160,6 +211,10 @@ def main():
             url = f"https://tiles.stadiamaps.com/tiles/stamen_terrain_background/{z}/{x}/{y}.jpg?api_key=0963bb5f-6e8c-4978-9af0-4cd3a2627df9"
             return url
     stamen_terrain = StadiaStamen('terrain-background')
+    campaign=[*flight_dates.keys()][0]
+    campaign_path="C://Users/u300737/Desktop/Desktop_alter_Rechner/"+\
+                    "PhD_UHH_WIMI/Work/GIT_Repository/"+"hamp_processing_py/"+\
+                        "hamp_processing_python/Flight_Data/"+campaign+"/"
     
     amsr2_sea_ice_path=campaign_path+\
         "\\sea_ice\\"
@@ -168,6 +223,229 @@ def main():
     # reversing the original colormap using reversed() function
     reversed_map = orig_map.reversed() 
 
+    if plot_all_sectors:
+        gls=[None,None,None,None]
+        
+        row_no=2
+        fig,axs=plt.subplots(row_no,col_no,sharex=True,sharey=True,
+                    figsize=(16,12),subplot_kw={'projection': projection})
+        fig_labels=["(a)","(b)","(c)","(d)"]
+            
+        axis=axs.flatten()
+        for k in range(4):
+            axis[k].set_extent([-20,27,67.5,80])
+        
+            if k < 2:
+                key=0
+                row=0
+            else:
+                key=1
+                row=1
+            col=0
+            flight_date= [*flight_dict.keys()][key]
+            if (k+1)%2==0:
+                col=1
+                ar_of_day="AR_entire_2"
+            else:
+                ar_of_day="AR_entire_1"
+                
+            leg_dict_key=[*flight_dates[campaign].keys()][key]+"_"+ar_of_day
+            print("Leg dict key:",leg_dict_key)
+               
+            cmpgn_cls=[*flight_dict.values()][key][0]
+            flight=[*flight_dict.values()][key][1]
+            cfg_dict=quicklook_dicts.get_prcs_cfg_dict(
+                            flight, flight_dates[campaign][flight], 
+                            campaign,campaign_path)
+            HALO_Devices_cls=measurement_instruments_ql.HALO_Devices(cfg_dict)
+            Sondes_cls=measurement_instruments_ql.Dropsondes(HALO_Devices_cls)
+            Sondes_cls.open_all_sondes_as_dict()
+            sonde_data=Sondes_cls.sonde_dict
+    
+    
+            # Aircraft   
+            haloac3.load_AC3_bahamas_ds(flight)
+            halo_dict=haloac3.bahamas_ds
+            if isinstance(halo_dict,pd.DataFrame):
+                halo_df=halo_dict.copy() 
+            elif isinstance(halo_dict,xr.Dataset):
+                halo_df=pd.DataFrame(data=np.nan,columns=["alt","Lon","Lat"],
+                        index=pd.DatetimeIndex(np.array(halo_dict["TIME"][:])))
+                halo_df["longitude"]=halo_dict["IRS_LON"].data
+                halo_df["latitude"]=halo_dict["IRS_LAT"].data
+
+            ##### Load ERA5-data
+            era5=ERA5(for_flight_campaign=True,campaign=cmpgn_cls.name,
+                  research_flights=flight,
+                  era_path=cmpgn_cls.campaign_path+"/data/ERA-5/")
+           
+            hydrometeor_lvls_path=cmpgn_cls.campaign_path+"/data/ERA-5/"
+            file_name="total_columns_"+flight_date[0:4]+"_"+\
+                       flight_date[4:6]+"_"+\
+                       flight_date[6:8]+".nc"    
+            
+            era_ds,era_path=era5.load_era5_data(file_name)
+            era_index=era_index_dict[flight_date] 
+            era_ds["IVT_v"]=era_ds["p72.162"]
+            era_ds["IVT_u"]=era_ds["p71.162"]
+            era_ds["IVT"]=np.sqrt(era_ds["IVT_u"]**2+era_ds["IVT_v"]**2)
+            era_ds["IVT"]=era_ds["IVT"].where(era_ds.IVT>100)
+            # Make Grid but adapt it for specific subplot
+            gls[key] = axis[k].gridlines(crs=ccrs.PlateCarree(),
+                        draw_labels=True, x_inline=False, y_inline=False,
+                        zorder=15)
+            gls[key].bottom_labels = False
+            gls[key].ylocator = mticker.FixedLocator([70,75,80,85])
+            gls[key].xlocator = mticker.FixedLocator([-30,0,30])
+            gls[key].top_labels    = True
+            gls[key].bottom_labels = True
+            gls[key].bottom_labels = True
+            gls[key].bottom_labels = True
+            if col==0: 
+                gls[key].right_labels  = False
+            if row==0:
+                gls[key].bottom_labels = False
+            if row==1:    
+                gls[key].top_labels    = False
+            if col==1:
+                gls[key].left_labels   = False
+                
+    
+                
+            gls[key].xlabel_style = {'size': 20}
+            gls[key].ylabel_style = {'size': 20}
+            #----------------------------------------------------------------------#
+            # Plot Geomap
+            axis[k].add_image(stamen_terrain, 3)
+            # Plot sea ice
+            sea_ice_file_list=glob.glob(amsr2_sea_ice_path+"*"+\
+                                        flight_date+"*.nc")
+            sea_ice_ds=xr.open_dataset(sea_ice_file_list[0])
+            seaice=sea_ice_ds["seaice"]                                       
+            # Sea ice
+            axis[k].pcolormesh(seaice.lon, seaice.lat,np.array(seaice[:]), 
+                               transform=ccrs.PlateCarree(), cmap=reversed_map)
+            # Create white overlay for less strong colors
+            x=np.linspace(-90,90,41)
+            y=np.linspace(55,90,93)
+            x_grid,y_grid=np.meshgrid(x,y)
+            white_overlay= np.zeros((41,93))+0.3
+            axis[k].contourf(x_grid,y_grid,white_overlay.T,
+                          cmap="Greys",vmin=0,vmax=1,
+                          transform=ccrs.PlateCarree(),alpha=0.6)
+        
+            # Plot IVT
+            C1=axis[k].contourf(era_ds["longitude"],era_ds["latitude"],
+                era_ds[met_var_dict["ERA_name"][meteo_var]][era_index[col],:,:],
+                levels=met_var_dict["levels"][meteo_var],extend="max",
+                transform=ccrs.PlateCarree(),
+                cmap=met_var_dict["colormap"][meteo_var],alpha=0.6,
+                zorder=6)
+        
+            axis[k].coastlines(resolution="50m",zorder=9)
+            # Date and Timestep
+            axis[k].text(-10, 69, ar_label[flight_date]+\
+                      " "+str(era_index[col])+" UTC",
+                      fontsize=20,transform=ccrs.PlateCarree(),
+                      color="k",bbox=dict(
+                          facecolor='whitesmoke',edgecolor="black"),zorder=10)
+            axis[k].plot(halo_df["longitude"],halo_df["latitude"],
+                         color="white",lw=2,transform=ccrs.PlateCarree(),
+                         zorder=10)
+            axis[k].plot(halo_df["longitude"],halo_df["latitude"],lw=1,
+                        color="k",transform=ccrs.PlateCarree(),zorder=10)
+            
+            if not leg_dict_key=="RF05_AR_entire_2":
+                start=leg_dict[leg_dict_key]["inflow_times"][0]
+                end=leg_dict[leg_dict_key]["outflow_times"][-1]
+            else:
+                start=leg_dict[leg_dict_key]["outflow_times"][0]
+                end=leg_dict[leg_dict_key]["inflow_times"][-1]
+            axis[k].plot(halo_df["longitude"].loc[start:end],
+                         halo_df["latitude"].loc[start:end],
+                         color="white",lw=6,transform=ccrs.PlateCarree(),
+                         zorder=11)
+            axis[k].plot(halo_df["longitude"].loc[start:end],
+                         halo_df["latitude"].loc[start:end],
+                         color="mediumorchid",lw=4,transform=ccrs.PlateCarree(),
+                         zorder=12)
+            
+            if k==0:
+                axis[k].annotate('HALO',
+                             xy=(0, -0.275), xycoords='axes fraction', 
+                             xytext=(0.2, -0.285),fontsize=20,
+                             arrowprops=dict(arrowstyle="-",lw=2, color='k'))
+                #axis[k].annotate("AR corridor",xy=(0,-))
+
+            # AR label (AR1)
+            axis[k].text(-36,78.5,fig_labels[k],fontsize=20,
+                transform=ccrs.PlateCarree(),color="k",
+                bbox=dict(facecolor="whitesmoke",edgecolor="black"),
+                zorder=10)
+            # Add dropsondes
+            sonde_shapes="v"
+            for s,sonde in enumerate(sonde_data["launch_time"].keys()):
+                release_lat=sonde_data["reference_lat"][sonde].data[0]
+                release_lon=sonde_data["reference_lon"][sonde].data[0]
+                scat=axis[k].scatter(release_lon,release_lat,
+                        marker=sonde_shapes,s=50,edgecolors="k",
+                        color="mintcream",transform=ccrs.PlateCarree(), zorder=13)
+                if s in relevant_sondes[leg_dict_key]["sondes_no"]:
+                    scat=axis[k].scatter(release_lon,release_lat,
+                        marker=sonde_shapes,s=300,edgecolors="k",
+                            color="orange",transform=ccrs.PlateCarree(),
+                            zorder=14)
+                if s in relevant_sondes[leg_dict_key]["internal_sondes_no"]:
+                    scat=axis[k].scatter(release_lon,release_lat,
+                        marker=sonde_shapes,s=300,edgecolors="k",
+                            color="whitesmoke",transform=ccrs.PlateCarree(),
+                            zorder=14)
+            
+            sonde_list=[*sonde_data["launch_time"].keys()]
+            lat_sonde_series=pd.Series(data=[*sonde_data["reference_lat"].values()])
+            lon_sonde_series=pd.Series(data=[*sonde_data["reference_lon"].values()])
+            left_edge_int=relevant_sondes[leg_dict_key]["left_edge"]
+            left_edge_lat=lat_sonde_series.iloc[left_edge_int]
+            right_edge_int=relevant_sondes[leg_dict_key]["right_edge"]
+            right_edge_lat=lat_sonde_series.iloc[right_edge_int]
+            
+            left_edge_lon=lon_sonde_series.iloc[left_edge_int]
+            right_edge_lon=lon_sonde_series.iloc[right_edge_int]
+               
+            axis[k].plot(left_edge_lon,left_edge_lat,lw=5,
+                         ls="--",color="orange",transform=ccrs.PlateCarree(),
+                         zorder=16)
+            axis[k].plot(right_edge_lon,right_edge_lat,lw=5,
+                         ls="--",color="orange",transform=ccrs.PlateCarree(),
+                         zorder=16)
+        
+        cbar_ax = fig.add_axes([0.15, 0.06, 0.7, 0.02])
+        cbar=fig.colorbar(C1, cax=cbar_ax,
+                          extend="max",orientation="horizontal")
+        cbar.set_ticks([100,250,500])
+        cbar_ax.text(0.5,-3.5,meteo_var+" "+met_var_dict["units"][meteo_var],
+                     fontsize=20,transform=cbar_ax.transAxes)   
+        plt.subplots_adjust(wspace=0.05, hspace=0.05)
+        plot_path=paths_dict["current_path"]+"/../plots/"
+        fig_name="Fig09_budget_corridors_tendency.png"
+        fig.savefig(plot_path+fig_name,dpi=300,bbox_inches="tight")
+        print("Figure saved as:",plot_path+fig_name)
+        sys.exit()
+            
+    
+        
+    
+    
+    col_no=len(flights)
+    row_no=1
+    fig,axs=plt.subplots(row_no,col_no,sharex=True,sharey=True,figsize=(12,16),
+                             subplot_kw={'projection': projection})
+    key=0
+    # Aircraft data
+    fig_labels=["(a)","(b)","(c)"]
+    gls=[None,None,None]
+    
+    
     for col in range(col_no):
         flight_date= [*flight_dict.keys()][key]
         print("Flight date",flight_date)
