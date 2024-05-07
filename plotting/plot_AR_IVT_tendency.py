@@ -556,6 +556,11 @@ class AR_IVT_tendency_plotter():
         fig_name="Fig02_AR_RF05_RF06_tendency.png"
         fig.savefig(fig_path+fig_name,dpi=300,bbox_inches="tight")
         print("Figure saved as:",fig_path+fig_name)
+    def plot_ar_cases(self,merged_bahamas,ar_surface_mask,lon_sondes,
+                      lat_sondes,ar_geo_sondes):
+        merged_bahamas_df=merged_bahamas.to_dataframe()
+        date_list=list(np.unique(merged_bahamas_df.index.date.astype(str)))
+        
 
 def main(do_plot_tendency=True,plot_all_sectors=True,plot_overview=False,
          only_both_flights=True):
