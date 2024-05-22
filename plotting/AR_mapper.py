@@ -772,8 +772,7 @@ class AR_IVT_tendency_plotter():
         col_no=2
         fig,axs=plt.subplots(row_no,col_no,sharex=True,sharey=True,
                 figsize=(16,12),subplot_kw={'projection': self.projection})
-        fig_labels=["(a)","(b)","(c)","(d)"]
-        
+        fig_labels=["(a) S1","(b) S2","(c) S3","(d) S4"]
         axis=axs.flatten()
             
         for k in range(4):

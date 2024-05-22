@@ -99,7 +99,388 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         for comp in budget_comps.index:
             self.budget_df[comp].loc[idx]=float(budget_comps.loc[comp])
         print(self.budget_df)
-        self.save_sector_budget_components()    
+        self.save_sector_budget_components()
+    def plot_AR_intensity_boxplot_Sonde_ICON_single(self,
+            merged_halo_icon_ivt,sector_sondes):
+        """
+        This is the old version directly comparing sondes and ICON 
+        in terms of IWV and IVT. It created the initial Fig. 10 of 
+        HALO-AC3 AR moisture budget paper.
+
+        Parameters
+        ----------
+        merged_halo_icon_ivt : TYPE
+            DESCRIPTION.
+        sector_sondes : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        AR_intensity_fig=plt.figure(figsize=(12,5.5))
+        ax1=AR_intensity_fig.add_subplot(111)
+        ax2=ax1.twinx()
+        ivt_props=dict(widths=0.3,patch_artist=True,
+            boxprops=dict(facecolor="mediumseagreen",color="k",lw=2),
+            medianprops=dict(color="whitesmoke",lw=3,),
+            whiskerprops=dict(lw=2),capprops=dict(lw=2))
+    
+        iwv_props=dict(widths=0.3,patch_artist=True,
+            boxprops=dict(facecolor="purple",color="k",lw=2),
+            medianprops=dict(color="gold",lw=3,),
+            whiskerprops=dict(lw=2),capprops=dict(lw=2))
+    
+        ax1.boxplot([merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S1"]["IVT"],
+                    merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S2"]["IVT"],
+                    merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S3"]["IVT"],
+                    merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S4"]["IVT"]],
+                    positions=[0.8,1.8,2.8,3.8],**ivt_props)
+        ax1.scatter(np.repeat([0.8],sector_sondes["S1"]["IVT"].shape[0]),sector_sondes["S1"]["IVT"],marker="v",s=100,zorder=3,
+                   color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([1.8],sector_sondes["S2"]["IVT"].shape[0]),sector_sondes["S2"]["IVT"],marker="v",s=100,zorder=3,
+                   color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([2.8],sector_sondes["S3"]["IVT"].shape[0]),sector_sondes["S3"]["IVT"],marker="v",s=100,zorder=3,
+                   color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([3.8],sector_sondes["S4"]["IVT"].shape[0]),sector_sondes["S4"]["IVT"],marker="v",s=100,zorder=3,
+                   color="mintcream",edgecolor="k",lw=1.5)
+    
+        ax2.boxplot([merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S1"]["IWV_calc"],
+                    merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S2"]["IWV_calc"],
+                    merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S3"]["IWV_calc"],
+                    merged_halo_icon_ivt[merged_halo_icon_ivt["Sector"]=="S4"]["IWV_calc"]],
+                    positions=[1.2,2.2,3.2,4.2],**iwv_props)
+    
+        ax2.scatter(np.repeat([1.2],sector_sondes["S1"]["IWV"].shape[0]),sector_sondes["S1"]["IWV"],marker="v",s=100,zorder=3,
+                   color="lavender",edgecolor="k",lw=1.5)
+        ax2.scatter(np.repeat([2.2],sector_sondes["S2"]["IWV"].shape[0]),sector_sondes["S2"]["IWV"],marker="v",s=100,zorder=3,
+                   color="lavender",edgecolor="k",lw=1.5)
+        ax2.scatter(np.repeat([3.2],sector_sondes["S3"]["IWV"].shape[0]),sector_sondes["S3"]["IWV"],marker="v",s=100,zorder=3,
+                   color="lavender",edgecolor="k",lw=1.5)
+        ax2.scatter(np.repeat([4.2],sector_sondes["S4"]["IWV"].shape[0]),sector_sondes["S4"]["IWV"],marker="v",s=100,zorder=3,
+                   color="lavender",edgecolor="k",lw=1.5)
+    
+        ax1.set_xlabel("AR Corridor")
+        ax1.set_xticks([1,2,3,4])
+        ax1.set_xticklabels(["S1","S2","S3","S4"])
+        ax1.set_yticks([0,200,400])
+        ax1.set_ylim([0,500])
+        ax2.set_yticks([0,8,16])
+        ax2.set_ylim([0,20])
+        ax1.set_ylabel("IVT ($\mathrm{kg\,m}^{-1}{\mathrm{s}}^{-1})$",color="darkgreen")
+        ax2.set_ylabel("IWV ($\mathrm{kg\,m}^{-2})$",color="purple")
+        ax1.spines["bottom"].set_linewidth(2)
+        ax1.spines["left"].set_linewidth(2)
+        ax1.tick_params("x",width=2,length=8)
+        ax1.tick_params("y",width=2,length=8)
+        ax2.tick_params("y",width=2,length=8)
+    
+        sns.despine(offset=10,ax=ax1)
+        sns.despine(offset=10,ax=ax2)
+        fig_name="Fig10_HALO_RF05_RF06_IVT_tendency.pdf"
+        plot_path=os.getcwd()+"/../plots/"
+        AR_intensity_fig.savefig(plot_path+fig_name,dpi=300,bbox_inches="tight")
+        print("Figure saved as:", plot_path+fig_name)
+        
+    def plot_sonde_based_AR_intensity_boxplot(self,sector_sondes):
+        matplotlib.rcParams.update({"font.size":20})
+        AR_intensity_fig=plt.figure(figsize=(12,5.5))
+        ax1=AR_intensity_fig.add_subplot(111)
+        ax2=ax1.twinx()
+        ivt_props=dict(widths=0.3,patch_artist=True,
+            boxprops=dict(facecolor="mediumseagreen",color="k",lw=2),
+            medianprops=dict(color="whitesmoke",lw=3,),
+            whiskerprops=dict(lw=2),capprops=dict(lw=2))
+
+        iwv_props=dict(widths=0.3,patch_artist=True,
+            boxprops=dict(facecolor="purple",color="k",lw=2),
+            medianprops=dict(color="gold",lw=3,),
+            whiskerprops=dict(lw=2),capprops=dict(lw=2))
+
+        ax1.boxplot([sector_sondes["S1"]["IVT"],
+                sector_sondes["S2"]["IVT"],
+                sector_sondes["S3"]["IVT"],
+                sector_sondes["S4"]["IVT"]],
+                positions=[0.8,1.8,2.8,3.8],**ivt_props)
+        ax1.scatter(np.repeat([0.8],sector_sondes["S1"]["IVT"].shape[0]),
+                    sector_sondes["S1"]["IVT"],marker="v",s=100,zorder=3,
+                    color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([1.8],sector_sondes["S2"]["IVT"].shape[0]),
+                    sector_sondes["S2"]["IVT"],marker="v",s=100,zorder=3,
+               color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([2.8],sector_sondes["S3"]["IVT"].shape[0]),
+                    sector_sondes["S3"]["IVT"],marker="v",s=100,zorder=3,
+               color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([3.8],sector_sondes["S4"]["IVT"].shape[0]),
+                    sector_sondes["S4"]["IVT"],marker="v",s=100,zorder=3,
+               color="mintcream",edgecolor="k",lw=1.5)
+
+        ax2.boxplot([sector_sondes["S1"]["IWV"],
+            sector_sondes["S2"]["IWV"],
+            sector_sondes["S3"]["IWV"],
+            sector_sondes["S4"]["IWV"]],
+            positions=[1.2,2.2,3.2,4.2],
+            **iwv_props)
+
+        ax2.scatter(np.repeat([1.2],sector_sondes["S1"]["IWV"].shape[0]),
+                    sector_sondes["S1"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+        ax2.scatter(np.repeat([2.2],sector_sondes["S2"]["IWV"].shape[0]),
+                    sector_sondes["S2"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+        ax2.scatter(np.repeat([3.2],sector_sondes["S3"]["IWV"].shape[0]),
+                    sector_sondes["S3"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+        
+        ax2.scatter(np.repeat([4.2],sector_sondes["S4"]["IWV"].shape[0]),
+                    sector_sondes["S4"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+
+        ax1.set_xlabel("AR Corridor")
+        ax1.set_xticks([1,2,3,4])
+        ax1.set_xticklabels(["S1","S2","S3","S4"])
+        ax1.set_yticks([0,200,400])
+        ax1.set_ylim([0,500])
+        ax2.set_yticks([0,8,16])
+        ax2.set_ylim([0,20])
+        ax1.set_ylabel("IVT ($\mathrm{kg\,m}^{-1}{\mathrm{s}}^{-1})$",
+                       color="darkgreen")
+        ax2.set_ylabel("IWV ($\mathrm{kg\,m}^{-2})$",
+                       color="purple")
+        ax1.spines["bottom"].set_linewidth(2)
+        ax1.spines["left"].set_linewidth(2)
+        ax1.tick_params("x",width=2,length=8)
+        ax1.tick_params("y",width=2,length=8)
+        ax2.tick_params("y",width=2,length=8)
+    
+        sns.despine(offset=10,ax=ax1)
+        sns.despine(offset=10,ax=ax2)
+        fig_name="Fig10_HALO_RF05_RF06_sonde_IWV_IVT_tendency.pdf"
+        AR_intensity_fig.savefig(
+            self.plot_path+fig_name,dpi=300,bbox_inches="tight")
+        print("Figure saved as:", self.plot_path+fig_name)
+    def plot_AR_intensity_sonde_boxplots_with_icon(
+            self,merged_halo_icon_ivt,sector_sondes):
+        
+        print("Not yet available. Under construction.")
+        sys.exit()
+        matplotlib.rcParams.update({"font.size":20})
+        AR_intensity_fig=plt.figure(figsize=(12,5.5))
+        ax1=AR_intensity_fig.add_subplot(111)
+        ax2=ax1.twinx()
+        ivt_props=dict(widths=0.3,patch_artist=True,
+            boxprops=dict(facecolor="mediumseagreen",color="k",lw=2),
+            medianprops=dict(color="whitesmoke",lw=3,),
+            whiskerprops=dict(lw=2),capprops=dict(lw=2))
+
+        iwv_props=dict(widths=0.3,patch_artist=True,
+            boxprops=dict(facecolor="purple",color="k",lw=2),
+            medianprops=dict(color="gold",lw=3,),
+            whiskerprops=dict(lw=2),capprops=dict(lw=2))
+
+        ax1.boxplot([sector_sondes["S1"]["IVT"],
+                sector_sondes["S2"]["IVT"],
+                sector_sondes["S3"]["IVT"],
+                sector_sondes["S4"]["IVT"]],
+                positions=[0.8,1.8,2.8,3.8],**ivt_props)
+        ax1.scatter(np.repeat([0.8],sector_sondes["S1"]["IVT"].shape[0]),
+                    sector_sondes["S1"]["IVT"],marker="v",s=100,zorder=3,
+                    color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([1.8],sector_sondes["S2"]["IVT"].shape[0]),
+                    sector_sondes["S2"]["IVT"],marker="v",s=100,zorder=3,
+               color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([2.8],sector_sondes["S3"]["IVT"].shape[0]),
+                    sector_sondes["S3"]["IVT"],marker="v",s=100,zorder=3,
+               color="mintcream",edgecolor="k",lw=1.5)
+        ax1.scatter(np.repeat([3.8],sector_sondes["S4"]["IVT"].shape[0]),
+                    sector_sondes["S4"]["IVT"],marker="v",s=100,zorder=3,
+               color="mintcream",edgecolor="k",lw=1.5)
+
+        ax2.boxplot([sector_sondes["S1"]["IWV"],
+            sector_sondes["S2"]["IWV"],
+            sector_sondes["S3"]["IWV"],
+            sector_sondes["S4"]["IWV"]],
+            positions=[1.2,2.2,3.2,4.2],
+            **iwv_props)
+
+        ax2.scatter(np.repeat([1.2],sector_sondes["S1"]["IWV"].shape[0]),
+                    sector_sondes["S1"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+        ax2.scatter(np.repeat([2.2],sector_sondes["S2"]["IWV"].shape[0]),
+                    sector_sondes["S2"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+        ax2.scatter(np.repeat([3.2],sector_sondes["S3"]["IWV"].shape[0]),
+                    sector_sondes["S3"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+        
+        ax2.scatter(np.repeat([4.2],sector_sondes["S4"]["IWV"].shape[0]),
+                    sector_sondes["S4"]["IWV"],marker="v",s=100,zorder=3,
+                    color="lavender",edgecolor="k",lw=1.5)
+
+        ax1.set_xlabel("AR Corridor")
+        ax1.set_xticks([1,2,3,4])
+        ax1.set_xticklabels(["S1","S2","S3","S4"])
+        ax1.set_yticks([0,200,400])
+        ax1.set_ylim([0,500])
+        ax2.set_yticks([0,8,16])
+        ax2.set_ylim([0,20])
+        ax1.set_ylabel("IVT ($\mathrm{kg\,m}^{-1}{\mathrm{s}}^{-1})$",
+                       color="darkgreen")
+        ax2.set_ylabel("IWV ($\mathrm{kg\,m}^{-2})$",
+                       color="purple")
+        ax1.spines["bottom"].set_linewidth(2)
+        ax1.spines["left"].set_linewidth(2)
+        ax1.tick_params("x",width=2,length=8)
+        ax1.tick_params("y",width=2,length=8)
+        ax2.tick_params("y",width=2,length=8)
+    
+        sns.despine(offset=10,ax=ax1)
+        sns.despine(offset=10,ax=ax2)
+        fig_name="Fig10_HALO_RF05_RF06_sonde_IWV_IVT_tendency.pdf"
+        AR_intensity_fig.savefig(
+            self.plot_path+fig_name,dpi=300,bbox_inches="tight")
+        print("Figure saved as:", self.plot_path+fig_name)
+        
+    def updt_plot_component_tendency(self,with_residuals=False,
+                                     save_as_manuscript_fig=True):
+        matplotlib.rcParams.update({"font.size":20})
+        budget_components_fig=plt.figure(figsize=(12,6))
+        ax1=budget_components_fig.add_subplot(111)
+        ax1.spines['left'].set_linewidth(2)
+        ax1.spines['bottom'].set_linewidth(2)
+        ax1.xaxis.set_tick_params(width=2,length=4)
+        ax1.yaxis.set_tick_params(width=2,length=4)
+        marker_size=18
+        # Local change IWV
+        ax1.errorbar([0.7,1.7,2.7,3.7],self.budget_df["IWV_dt"].values,
+            yerr=self.budget_df["IWV_dt_unc"], marker='v', mfc='grey',
+            mec='black', ecolor="black",ms=marker_size+2,
+            lw=2,mew=1,ls="",label="$\delta IWV/ \delta t$",barsabove=True)
+        # Evaporation
+        ax1.errorbar([0.9,1.9,2.9,3.9], self.budget_df["Evap"].values,
+            yerr=self.budget_df["Evap_unc"], marker='s',
+            mfc='red',mec='black', ecolor="black",lw=2,
+            ms=marker_size, mew=1,ls="",label="$E$",barsabove=True)
+        # Precipitation
+        ax1.errorbar([1,2,3,4],self.budget_df["Precip"].values,
+            yerr=[self.budget_df["Precip"].values-\
+                  self.budget_df["Precip_min"].values,
+                  self.budget_df["Precip_max"].values-\
+                  self.budget_df["Precip"].values],
+            marker="s",ecolor="black",mfc="lightblue",
+            mec="black",ms=marker_size,mew=1,lw=2,
+            ls="",label="-$P$",barsabove=True)
+                     # ---> think about direction and sign of errorbars
+            
+        # Mass divergence
+        ax1.errorbar(np.array([1.1,2.1,3.1,4.1]),self.budget_df["DIV_mass"].values,
+            yerr=self.budget_df["DIV_mass_unc"].values,marker="s",
+            mfc="teal",ls="",ms=marker_size,mew=1,markeredgecolor="k",
+            lw=2,ecolor="k",label="$DIV_{mass}$",barsabove=True)
+        
+            #yerr=[mass_div_series_max-mass_div_series,mass_div_series-mass_div_series_min],
+            
+        # Moisture Advection
+        ax1.errorbar(np.array([1.2,2.2,3.2,4.2]),self.budget_df["ADV_q"].values,
+                     yerr=self.budget_df["ADV_q_unc"],
+                     #yerr=[adv_q_series_max-adv_q_series,adv_q_series-adv_q_series_min],
+                     marker="s",ms=marker_size,mew=1,mfc="darkgreen",ls="",
+                     markeredgecolor="k",ecolor="k",
+                     lw=2,label="$ADV_{q}$",barsabove=True)
+        #Residuals
+        if with_residuals:
+            ax1.errorbar(np.array([1.3,2.3,3.3,4.3]),
+                self.budget_df["residual"],yerr=self.budget_df["residual_unc"],
+                marker="x",mfc="k",mec="k",ecolor="k",lw=2,
+                ms=marker_size,mew=1,ls="",label="residual",barsabove=True)
+            
+        ##
+        ax1.axhline(y=0,ls="--",lw=2,color="k")
+        # create vertical border lines
+        ax1.axvline(x=1.5,ls="--",lw=1,color="lightgrey")
+        ax1.axvline(x=2.5,ls="--",lw=1,color="lightgrey")
+        ax1.axvline(x=3.5,ls="--",lw=1,color="lightgrey")
+        ax1.set_ylabel(
+            "Moisture Budget \nContribution ($\mathrm{mm\,h}^{-1}$)")
+        ax1.set_xticks([1,2,3,4])
+        ax1.set_xticklabels(["S1","S2","S3","S4"])#
+        
+        col_number=5
+        if with_residuals:
+            col_number+=1
+        legend=ax1.legend(loc="lower right",
+            ncol=col_number,frameon=True,
+            fontsize=17)
+        frame = legend.get_frame()
+        frame.set_color('lightgrey')
+        frame.set_edgecolor('black')
+        ax1.set_ylim([-1,1])
+        ax1.set_yticks([-1,-.5,0,.5,1])
+        #import matplotlib.patches as mpatches
+        sns.despine(offset=10)
+        file_end=".pdf"
+        fig_name="HALO_Budget_components_tendency"
+        if save_as_manuscript_fig:
+            fig_name="Fig11_"+fig_name
+        if with_residuals:
+            fig_name+="_with_residuals"
+        fig_name+=file_end
+        budget_components_fig.savefig(self.plot_path+fig_name,
+                                      dpi=300,bbox_inches="tight")
+        print("Figure saved as:",self.plot_path+fig_name)
+    
+    def plot_budget_residuals(self,save_as_manuscript_plot=True):
+        """
+        This routine plots the resiudals emerging from
+        the moisture budget closure for all sectors
+        """
+    
+        matplotlib.rcParams.update({"font.size":20})
+        residuals_fig, ax = plt.subplots(1,1,figsize=(12,6))
+        ax.errorbar(np.array([1,2,3,4]),self.budget_df["residual"],
+                yerr=self.budget_df["residual_unc"],marker="X",mfc="red",
+                mec="k",ecolor="darkred",lw=4,ms=20,
+                mew=2,ls="",label="residual")
+    
+        ax.axhline(y=0,ls="--",lw=1,color="k")
+        ax.set_ylabel("Moisture Budget \nContribution ($\mathrm{mm\,h}^{-1}$)")
+        ax.set_xticks([1,2,3,4])
+        ax.set_xticklabels(["S1","S2","S3","S4"])#
+        ax.spines['left'].set_linewidth(2)
+        ax.spines['bottom'].set_linewidth(2)
+        ax.xaxis.set_tick_params(width=2,length=4)
+        ax.yaxis.set_tick_params(width=2,length=4)
+        ax.bar([0.75,1.75,2.75,3.75],self.budget_df["IWV_dt"],width=0.1,edgecolor="white",
+                   yerr=self.budget_df["IWV_dt_unc"],color="grey",alpha=0.5)
+        ax.bar([0.85,1.85,2.85,3.85],self.budget_df["ADV_q"],width=0.1,edgecolor="white",
+                   yerr=self.budget_df["ADV_q_unc"],
+                   color="lightgreen",alpha=0.5)
+        ax.bar([0.95,1.95,2.95,3.95],self.budget_df["DIV_mass"],
+               width=0.1,edgecolor="white",
+               yerr=self.budget_df["DIV_mass_unc"],
+               color="teal",alpha=0.5)
+        ax.bar([1.05,2.05,3.05,4.05],self.budget_df["Precip"],
+               width=0.1,edgecolor="white",
+               yerr=(self.budget_df["Precip_max"]-\
+                    self.budget_df["Precip_min"])/2,
+                   color="lightblue",alpha=0.5)
+        ax.bar([1.15,2.15,3.15,4.15],
+               self.budget_df["Evap"],width=0.1,edgecolor="white",
+                   yerr=self.budget_df["Evap_unc"],color="red",alpha=0.5)
+        ax.set_ylim([-1,1.5])
+        ax.set_yticks([-1,-.5,0,.5,1,1.5])
+        ax.legend()
+        sns.despine(offset=10)
+        file_end=".pdf"
+        fig_name="HALO_Budget_residual_tendency"
+        fig_name+=file_end
+        if save_as_manuscript_plot:
+            fig_name="Fig13_"+fig_name
+        residuals_fig.savefig(self.plot_path+fig_name,
+                              dpi=300,bbox_inches="tight")
+        print("Figure saved as:",self.plot_path+fig_name)
+    
         
 
 class HALO_AC3_evaporation(HALO_AC3_Budget_Plots):
@@ -1350,6 +1731,394 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         fig_name="Precip_internal_tendency.png"
         precip_trend_fig.savefig(fig_path+fig_name,dpi=300,bbox_inches="tight")
         print("Figure saved as:", fig_path+fig_name)        
+
+class HALO_AC3_IWV_tendency(HALO_AC3_Budget_Plots):
+    def __init__(self,cmpgn_cls,flight,ar_of_day,
+                 mwr,halo_df,internal_iwv_sonde,IWV_retrieved,
+                 halo_icon_hmc,snd_halo_icon_hmc,
+                 halo_era5,snd_halo_era5,
+                 internal_sondes_dict,
+                 sonde_times_series,Dropsondes,
+                 grid_name="ERA5",do_instantan=False,
+                 is_flight_campaign=True,
+                 major_path=os.getcwd(),sector="warm",
+                 aircraft=None,instruments=[],flights=[],
+                 interested_flights="all"):
+        
+        super().__init__(cmpgn_cls,flight,ar_of_day)
+        self.major_path=major_path+"/../"
+        self.plot_path=self.major_path+"/plots/"
+        self.grid_name=grid_name
+        
+        self.sonde_times_series  = sonde_times_series
+        self.internal_iwv_sonde  = internal_iwv_sonde
+        self.Dropsondes          = Dropsondes
+        self.internal_sondes_dict= internal_sondes_dict
+        self.halo_icon_hmc       = halo_icon_hmc
+        self.snd_halo_icon_hmc   = snd_halo_icon_hmc
+        self.halo_era5           = halo_era5
+        self.snd_halo_era5       = snd_halo_era5
+        self.IWV_retrieved       = IWV_retrieved
+        
+        self.halo_df             = halo_df
+        self.mwr                 = mwr
+        self.is_flight_campaign=is_flight_campaign
+        self.aircraft=aircraft
+        self.instruments=instruments
+        self.flight_day={}
+        self.flight_month={}
+        self.interested_flights="all"
+        self.major_path=major_path
+        self.is_synthetic_campaign=True
+        self.sector=sector
+        #matplotlib.rcParams.update({"font.size":24})
+        matplotlib.rcParams.update({"font.size":28})
+        if self.flight[0]=="RF05":
+            if self.ar_of_day=="AR_entire_1":
+                self.inflow_times=["2022-03-15 10:11","2022-03-15 11:13"]
+                self.internal_times=["2022-03-15 11:18","2022-03-15 12:14"]
+                self.outflow_times=["2022-03-15 12:20","2022-03-15 13:15"]
+            elif self.ar_of_day=="AR_entire_2":
+                self.inflow_times=["2022-03-15 14:30","2022-03-15 15:25"]
+                self.internal_times=["2022-03-15 13:20","2022-03-15 14:25"]
+                self.outflow_times=["2022-03-15 12:20","2022-03-15 13:15"]
+        if self.flight[0]=="RF06":
+            if self.ar_of_day=="AR_entire_1":
+                self.inflow_times=["2022-03-16 10:45","2022-03-16 11:21"]
+                self.internal_times=["2022-03-16 11:25","2022-03-16 12:10"]
+                self.outflow_times=["2022-03-16 12:15","2022-03-16 12:50"]
+            elif self.ar_of_day=="AR_entire_2":
+                self.inflow_times=["2022-03-16 12:12","2022-03-16 12:55"]
+                self.internal_times=["2022-03-16 12:58","2022-03-16 13:40"]
+                self.outflow_times=["2022-03-16 13:45","2022-03-16 14:18"]
+
+        self.new_halo_dict={self.flight[0]:\
+        {"inflow":self.halo_df.loc[self.inflow_times[0]:self.inflow_times[-1]],
+         "internal":self.halo_df.loc[self.internal_times[0]:self.internal_times[-1]],
+         "outflow":self.halo_df.loc[self.outflow_times[0]:self.outflow_times[-1]]}}
+
+        #from atmospheric_rivers import Atmospheric_Rivers
+        #AR_inflow,AR_outflow=Atmospheric_Rivers.locate_AR_cross_section_sectors(
+        #                            new_halo_dict,ERA5_on_HALO.halo_era5,
+        #                            flight[0])
+
+        self.relevant_sondes_dict={}
+        self.internal_sondes_dict={}
+            #pd.Timestamp("2023-03-16 16:00"))
+            
+        
+
+    def get_hamp_IWV_for_periods_around_all_sonde_locations(
+            self,half_period="30s"):
+        #hamp_gradients using 1min mean
+        hamp_iwv_internal=pd.DataFrame()
+        hamp_iwv_internal_mean=pd.Series(data=np.nan,
+                        index=self.internal_iwv_sonde.index)
+        for t,sonde_time in enumerate(self.internal_iwv_sonde.index):
+            if self.flight[0]=="RF06" and \
+                self.ar_of_day=="AR_entire_1" and t==0:
+                sonde_period_start= pd.Timestamp("2022-03-16 12:01")-\
+                    pd.Timedelta(half_period)
+                sonde_period_end  = pd.Timestamp("2022-03-16 12:01")+\
+                    pd.Timedelta(half_period)
+            else:    
+                sonde_period_start= pd.Timestamp(sonde_time)-\
+                                        pd.Timedelta(half_period)
+                sonde_period_end  = pd.Timestamp(sonde_time)+\
+                                        pd.Timedelta(half_period)
+            temporary_series=self.IWV_retrieved.loc[\
+                                    str(sonde_period_start):str(sonde_period_end)]
+            
+            temporary_series.index=range(temporary_series.shape[0])
+            hamp_iwv_internal[sonde_time]=temporary_series
+            mean_iwv_hamp_values=self.IWV_retrieved.loc[
+                            str(sonde_period_start):str(sonde_period_end)].mean()
+            hamp_iwv_internal_mean.loc[sonde_time]=mean_iwv_hamp_values.mean()
+            self.hamp_iwv_internal     = hamp_iwv_internal
+            self.hamp_iwv_internal_mean= hamp_iwv_internal_mean
+        return hamp_iwv_internal,hamp_iwv_internal_mean
+
+    def prepare_ICON(self,half_period="1min"):
+        icon_q_sondes={}
+        icon_z_sondes={}
+        for c,sonde_time in enumerate(self.internal_sondes_dict[self.sector]):
+            # Check if time difference lies out of budget corridor 
+            # in consecutive one
+            if self.relevant_timestamp>self.halo_df.index[-1]:
+                icon_q_sondes["Sonde"+str(c)]=\
+                    self.snd_halo_icon_hmc["q"].loc[\
+                    self.relevant_timestamp-pd.Timedelta(half_period):\
+                    self.relevant_timestamp+pd.Timedelta(half_period)].mean(axis=0)
+                icon_z_sondes["Sonde"+str(c)]=\
+                    self.snd_halo_icon_hmc["Z_Height"].loc[\
+                    self.relevant_timestamp-pd.Timedelta(half_period):\
+                    self.relevant_timestamp+pd.Timedelta(half_period)].mean(axis=0)
+                self.icon_iwv_diff.iloc[c]=self.snd_halo_icon_hmp["Interp_IWV"].loc[\
+                    self.relevant_timestamp-pd.Timedelta(half_period):\
+                    self.relevant_timestamp+pd.Timedelta(half_period)].mean(axis=0)
+            else:
+                icon_q_sondes["Sonde"+str(c)]=self.halo_icon_hmc["q"].loc[\
+                    self.relevant_timestamp-pd.Timedelta(half_period):\
+                    self.relevant_timestamp+pd.Timedelta(half_period)].mean(axis=0)
+            icon_z_sondes["Sonde"+str(c)]=self.halo_icon_hmc["Z_Height"].loc[\
+                    self.relevant_timestamp-pd.Timedelta(half_period):\
+                    self.relevant_timestamp+pd.Timedelta(half_period)].mean(axis=0)
+            self.icon_iwv_diff.iloc[c]=self.halo_icon_hmp["Interp_IWV"].loc[\
+                    self.relevant_timestamp-pd.Timedelta(half_period):\
+                    self.relevant_timestamp+pd.Timedelta(half_period)].mean(axis=0)   
+            
+        self.icon_q_sondes   = icon_q_sondes
+        self.icon_z_sondes   = icon_z_sondes
+        #self.icon_iwv_sondes = icon_iwv_sondes
+
+    def plot_internal_iwv_tendency(self,half_period="1min",include_ICON=True):
+        # Internal sondes iwv
+        time_list=[str(time) for time in self.sonde_times_series.index]
+        self.Dropsondes["new_alt"]=self.Dropsondes["alt"].copy()
+        new_key_list=[]
+        # IWV from internal sondes
+        for key in [*self.Dropsondes["alt"].keys()]:
+            new_key=str(pd.Timestamp(key))
+            self.Dropsondes["alt"][new_key] = self.Dropsondes["alt"].pop(key)
+        if not hasattr(self,"internal_iwv_sonde"):
+            if self.flight[0]=="RF06" and self.ar_of_day=="AR_entire_2":
+                self.internal_iwv_sonde=pd.Series(data=
+                [self.Dropsondes["IWV"].iloc[\
+                    self.internal_sondes_dict[self.sector][0]],np.nan],
+                            index=self.internal_sondes_dict[self.sector].index)
+            else:
+                self.internal_iwv_sonde=self.Dropsondes["IWV"].iloc[\
+                        self.internal_sondes_dict[self.sector]]
+        
+        minutes_to_divide=\
+            self.internal_iwv_sonde.index.to_series().diff().astype(
+                'timedelta64[m]')[-1]
+        self.iwv_sonde_diff_h=self.internal_iwv_sonde.diff()[-1]/\
+            minutes_to_divide*60
+    
+        #hamp_gradients using 5min mean (default)
+        hamp_iwv_internal,hamp_iwv_internal_mean=\
+            self.get_hamp_IWV_for_periods_around_all_sonde_locations(
+            half_period)
+        
+        self.hamp_iwv_diff_h=hamp_iwv_internal_mean.diff()/minutes_to_divide*60
+        # Include ICON
+        # 
+        self.icon_iwv_diff_h=pd.Series(data=np.nan, 
+            index=self.internal_iwv_sonde.index)
+        
+        if include_ICON:
+            self.prepare_ICON()
+        #if self.sector=="warm":
+        self.iwv_icon_diff_h=self.icon_iwv_diff.diff()[-1]/minutes_to_divide*60
+        if not self.flight[0]=="RF06" and self.ar_of_day=="AR_entire_2":
+            iwv_sonde_fig=plt.figure(figsize=(8,14))
+            ax1=iwv_sonde_fig.add_subplot(111)
+            matplotlib.rcParams['axes.linewidth'] = 3
+            ax1.patch.set_facecolor('lightgrey')
+            ax1.patch.set_alpha(0.5)
+            time_key_list=[*self.Dropsondes["q"].keys()]
+            if self.sector=="warm":
+                colors=["darkorange","moccasin"]
+            else:
+                colors=["darkviolet","plum"]
+    
+            for c,sonde_time in enumerate(self.internal_sondes_dict[self.sector]):
+                if self.sector=="warm":
+                    relevant_timestamp=time_key_list[sonde_time]
+                    ax1.scatter(self.Dropsondes["q"][relevant_timestamp]*1000,
+                                self.Dropsondes["alt"][str(relevant_timestamp)]/1000,
+                    color="k",s=140)
+                    ax1.scatter(self.Dropsondes["q"][relevant_timestamp]*1000,
+                                self.Dropsondes["alt"][str(relevant_timestamp)]/1000,
+                        label="Sonde "+str(relevant_timestamp),color=colors[c],s=80)
+                    iwv_sonde=self.Dropsondes["q"][relevant_timestamp]
+                else:
+                    relevant_timestamp=pd.Timestamp(sonde_time)
+    
+                ax1.scatter(self.icon_q_sondes["Sonde"+str(c)]*1000,
+                        self.icon_z_sondes["Sonde"+str(c)]/1000,
+                        marker="v", s=150, color=colors[c],edgecolor="k",
+                        label="ICON "+str(relevant_timestamp))
+            
+            ax1.set_xlabel("Specific humidity (${\mathrm{gkg}}^{-1}$)")
+            ax1.set_ylabel("Height (km)")
+            ax1.set_xlim([0,5])
+            ax1.set_ylim([0,12])
+            if self.sector=="warm":
+                ax1.text(1.4,7,
+                    "$\dfrac{\delta {IWV}_{\mathrm{Sonde}}}{\delta t}=$"+\
+                        str(round(self.iwv_sonde_diff_h,2))+" $\mathrm{mmh}^{-1}$",
+                     fontsize=25)
+            ax1.text(1.4,6,"$\dfrac{\delta {IWV}_{\mathrm{ICON}}}{\delta t}=$"+\
+                         str(round(self.iwv_icon_diff_h,2))+" $\mathrm{mmh}^{-1}$",
+                         fontsize=25)
+            ax1.text(1.4,5,"$\dfrac{\delta {IWV}_{\mathrm{HAMP}}}{\delta t}=$"+\
+                         str(round(self.hamp_iwv_diff[-1],2))+" $\mathrm{mmh}^{-1}$",
+                         fontsize=25)
+            ax1.xaxis.set_tick_params(width=3,length=10)
+            ax1.yaxis.set_tick_params(width=3,length=10)
+            ax1.legend(fontsize=24)
+            sns.despine(offset=10)
+            fig_name=self.flight[0]+"_"+self.ar_of_day+"_"+self.sector+\
+                "_sonde_iwv_tendency_"+half_period
+            fig_name+=".png"
+            iwv_sonde_fig.savefig(self.plot_path+fig_name,dpi=300,bbox_inches="tight")
+            print("Figure saved as:",self.plot_path+fig_name)
+            
+        else:
+            print("For ",self.flight[0]," ",self.ar_of_day, "no plotting")
+        
+    #return hamp_iwv_diff
+
+    def plot_IWV_data_intercomparison(self,half_period):
+        if not self.flight[0]=="RF06" and self.ar_of_day=="AR_entire_2":
+            iwv_sonde_fig=plt.figure(figsize=(8,14))
+            ax1=iwv_sonde_fig.add_subplot(111)
+            matplotlib.rcParams['axes.linewidth'] = 3
+            ax1.patch.set_facecolor('lightgrey')
+            ax1.patch.set_alpha(0.5)
+            time_key_list=[*self.Dropsondes["q"].keys()]
+            if self.sector=="warm":
+                colors=["darkorange","moccasin"]
+            else:
+                colors=["darkviolet","plum"]
+    
+            for c,sonde_time in enumerate(
+                    self.internal_sondes_dict[self.sector]):
+                if self.sector=="warm":
+                    relevant_timestamp=time_key_list[sonde_time]
+                    ax1.scatter(self.Dropsondes["q"][relevant_timestamp]*1000,
+                        self.Dropsondes["alt"][str(relevant_timestamp)]/1000,
+                        color="k",s=140)
+                    ax1.scatter(self.Dropsondes["q"][relevant_timestamp]*1000,
+                                self.Dropsondes["alt"][str(relevant_timestamp)]/1000,
+                        label="Sonde "+str(relevant_timestamp),color=colors[c],s=80)
+                    iwv_sonde=self.Dropsondes["q"][relevant_timestamp]
+                else:
+                    relevant_timestamp=pd.Timestamp(sonde_time)
+        
+                    ax1.scatter(self.icon_q_sondes["Sonde"+str(c)]*1000,
+                        self.icon_z_sondes["Sonde"+str(c)]/1000,
+                        marker="v", s=150, color=colors[c],edgecolor="k",
+                        label="ICON "+str(relevant_timestamp))
+                
+                ax1.set_xlabel("Specific humidity (${\mathrm{gkg}}^{-1}$)")
+                ax1.set_ylabel("Height (km)")
+                ax1.set_xlim([0,5])
+                ax1.set_ylim([0,12])
+                if self.sector=="warm":
+                    ax1.text(1.4,7,
+                        "$\dfrac{\delta {IWV}_{\mathrm{Sonde}}}{\delta t}=$"+\
+                            str(round(self.iwv_sonde_diff_h,2))+" $\mathrm{mmh}^{-1}$",
+                            fontsize=25)
+                    ax1.text(1.4,6,
+                        "$\dfrac{\delta {IWV}_{\mathrm{ICON}}}{\delta t}=$"+\
+                            str(round(self.iwv_icon_diff_h,2))+\
+                            " $\mathrm{mmh}^{-1}$",fontsize=25)
+                    ax1.text(1.4,5,
+                        "$\dfrac{\delta {IWV}_{\mathrm{HAMP}}}{\delta t}=$"+\
+                            str(round(self.hamp_iwv_diff_h[-1],2))+" $\mathrm{mmh}^{-1}$",
+                            fontsize=25)
+                ax1.xaxis.set_tick_params(width=3,length=10)
+                ax1.yaxis.set_tick_params(width=3,length=10)
+                ax1.legend(fontsize=24)
+                sns.despine(offset=10)
+                fig_name=self.flight[0]+"_"+self.ar_of_day+"_"+self.sector+\
+                    "_sonde_iwv_tendency_"+half_period
+                fig_name+=".png"
+                iwv_sonde_fig.savefig(self.plot_path+fig_name,
+                                      dpi=300,bbox_inches="tight")
+                print("Figure saved as:",self.plot_path+fig_name)
+            else:
+                print("For ",self.flight[0]," ",self.ar_of_day, "no plotting")
+            #return hamp_iwv_diff
+
+    def plot_iwv_comparison_sonde_hamp(self,
+            #iwv_sonde,mwr,halo_df,
+            half_period):
+        
+        internal_map=plt.figure(figsize=(18,12))
+        ax1=internal_map.add_subplot(111)
+        self.hamp_iwv_internal.plot.hist(bins=np.linspace(5,20,11),
+                                    alpha=0.3,xlim=[10,20],ax=ax1)
+    
+        ins = ax1.inset_axes([0.1,0.1,0.3,0.35])
+        ins.plot(self.mwr["lon"],self.mwr["lat"],color="grey",ls="--",lw=1)
+        ins.scatter(self.halo_df["longitude"],self.halo_df["latitude"],s=3,color="k")
+        colors=["blue","orange"]
+        for i,sonde_time in enumerate(self.internal_iwv_sonde.index):
+            ## Mean values
+            #  Dropsondes
+            if not self.internal_iwv_sonde.iloc[i]==np.nan:
+                ax1.axvline(x=self.internal_iwv_sonde.iloc[i],
+                            lw=3,ls="--",color="k")
+                ax1.axvline(x=self.internal_iwv_sonde.iloc[i],
+                            lw=2,ls="--",color=colors[i])
+            # HAMP
+            ax1.axvline(x=self.hamp_iwv_internal_mean.iloc[i],
+                        lw=3,color=colors[i])
+    
+            sonde_period_start= pd.Timestamp(sonde_time)-pd.Timedelta(half_period)
+            sonde_period_end  = pd.Timestamp(sonde_time)+pd.Timedelta(half_period)
+            rlv_geoloc=self.mwr.sel({"time":slice(sonde_period_start,sonde_period_end)})
+            sonde_lon=self.mwr["lon"].sel({"time":sonde_time})
+            sonde_lat=self.mwr["lat"].sel({"time":sonde_time})
+            ins.scatter(rlv_geoloc["lon"],rlv_geoloc["lat"],color=colors[i])
+            ins.scatter(sonde_lon,sonde_lat, s=100, marker="v",
+                        color=colors[i],lw=2,edgecolor="k")
+            ins.set_xlim([self.halo_df["longitude"].min()-1,
+                          self.halo_df["longitude"].max()+1])
+            ins.set_ylim([self.halo_df["latitude"].min()-1,
+                          self.halo_df["latitude"].max()+1])
+            ax1.set_xlabel("HAMP-based IWV / $\mathrm{kg}\,\mathrm{m}^{-2}$")
+            sns.despine(ax=ax1,offset=5)
+            fig_name=self.flight[0]+"_"+self.ar_of_day+"_"+self.sector+\
+                "_hamp_sonde_iwv_comparison"+"_twice_"+half_period+".png"
+            if self.flight[0]=="RF05" and self.ar_of_day=="AR_entire_1":
+                fig_name="Fig07_"+fig_name
+            internal_map.savefig(self.plot_path+fig_name,
+                                 dpi=300,bbox_inches="tight")
+            print("Figure saved as:",self.plot_path+fig_name)
+
+# Compare sondes and HAMP IWV with ERA5
+    def plot_iwv_flight_trend(self,surface_index,half_period):
+        iwv_trend=plt.figure(figsize=(16,9))
+        plt.scatter(self.sonde_times_series.index,
+                    self.Dropsondes["IWV"],
+                    s=100,marker="v",lw=3,edgecolor="k",
+                    color="purple",label="Sondes")
+        plt.plot(self.halo_era5.index,self.halo_era5["Interp_IWV"],
+                 color="grey",lw=3,label="ERA5",ls="--")
+        if not self.snd_halo_era5.shape[0]==0:
+                plt.plot(self.snd_halo_era5.index,
+                     self.snd_halo_era5["Interp_IWV"],
+                     color="grey",lw=3,label="ERA5",ls="--")
+        sea_IWV_retrieved=self.IWV_retrieved.copy()
+        sea_IWV_retrieved[~surface_index]=np.nan
+        plt.plot(sea_IWV_retrieved.index,
+                 sea_IWV_retrieved,
+                 color="purple",lw=1,label="HAMP")
+        for i,sonde_time in enumerate(self.internal_iwv_sonde.index):
+            if i > 0 and self.flight[0]!="RF06" and \
+                self.ar_of_day!="AR_entire_2":
+                plt.scatter(sonde_time,self.Dropsondes["IWV"].loc[sonde_time],
+                            marker="o",facecolors="none",edgecolor="k",lw=3,s=300)
+            sonde_period_start= pd.Timestamp(sonde_time)-pd.Timedelta(half_period)
+            sonde_period_end  = pd.Timestamp(sonde_time)+pd.Timedelta(half_period)
+            rlv_geoloc=self.mwr.sel({"time":slice(sonde_period_start,sonde_period_end)})
+            plt.plot(rlv_geoloc.time,self.IWV_retrieved.loc[rlv_geoloc.time],
+                     color="grey",lw=8)
+            plt.plot(rlv_geoloc.time,self.IWV_retrieved.loc[rlv_geoloc.time],
+                     color="purple",lw=2)
+        fig_name="IWV_trend_comparison_"+self.flight[0]+"_half_period_"+\
+            half_period
+        fig_name+=".png"
+        plot_path=self.plot_path+"/supplements/"
+        if not os.path.exists(plot_path):
+            os.makedirs(plot_path)
+        iwv_trend.savefig(plot_path+fig_name,dpi=300,bbox_inches="tight")
+        print("Figure saved as:",self.plot_path+fig_name)
 
 # Old
 #def rain_distribution_comparison(precip_icon_series,halo_icon_hmp,halo_era5, 
