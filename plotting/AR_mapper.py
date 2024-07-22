@@ -766,13 +766,13 @@ class AR_IVT_tendency_plotter():
         import measurement_instruments_ql
         import flightcampaign
         from reanalysis import ERA5        
-        
+        matplotlib.rcParams.update({"font.size":24})
         gls=[None,None,None,None]
         row_no=2
         col_no=2
         fig,axs=plt.subplots(row_no,col_no,sharex=True,sharey=True,
                 figsize=(16,12),subplot_kw={'projection': self.projection})
-        fig_labels=["(a) S1","(b) S2","(c) S3","(d) S4"]
+        fig_labels=["(a) S1, RF05","(b) S2, RF05","(c) S3, RF06","(d) S4, RF06"]
         axis=axs.flatten()
             
         for k in range(4):
@@ -855,9 +855,9 @@ class AR_IVT_tendency_plotter():
                 
     
                 
-            gls[key].xlabel_style = {'size': 20}
-            gls[key].ylabel_style = {'size': 20}
-            #----------------------------------------------------------------------#
+            gls[key].xlabel_style = {'size': 24}
+            gls[key].ylabel_style = {'size': 24}
+            #-----------------------------------------------------------------#
             # Plot Geomap
             axis[k].add_image(self.stamen_terrain, 3)
             # Plot sea ice
@@ -917,12 +917,12 @@ class AR_IVT_tendency_plotter():
             if k==0:
                 axis[k].annotate('HALO',
                              xy=(0, -0.275), xycoords='axes fraction', 
-                             xytext=(0.2, -0.285),fontsize=20,
+                             xytext=(0.2, -0.285),fontsize=24,
                              arrowprops=dict(arrowstyle="-",lw=2, color='k'))
                 #axis[k].annotate("AR corridor",xy=(0,-))
     
             # AR label (AR1)
-            axis[k].text(-36,78.5,fig_labels[k],fontsize=20,
+            axis[k].text(-35.5,78.1,fig_labels[k],fontsize=24,
                 transform=ccrs.PlateCarree(),color="k",
                 bbox=dict(facecolor="whitesmoke",edgecolor="black"),
                 zorder=20)
@@ -963,13 +963,13 @@ class AR_IVT_tendency_plotter():
                          ls="--",color="orange",transform=ccrs.PlateCarree(),
                          zorder=16)
         
-        cbar_ax = fig.add_axes([0.15, 0.06, 0.7, 0.02])
+        cbar_ax = fig.add_axes([0.15, 0.01, 0.7, 0.02])
         cbar=fig.colorbar(C1, cax=cbar_ax,
                           extend="max",orientation="horizontal")
         cbar.set_ticks([100,250,500])
         cbar_ax.text(0.5,-3.5,self.met_var+" "+\
                      self.met_var_dict["units"][self.met_var],
-                     fontsize=20,transform=cbar_ax.transAxes)   
+                     fontsize=24,transform=cbar_ax.transAxes)   
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
         fig_name="Fig09_budget_corridors_tendency.png"
         fig.savefig(self.plot_path+fig_name,dpi=300,bbox_inches="tight")

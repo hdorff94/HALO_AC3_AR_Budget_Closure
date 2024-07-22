@@ -363,31 +363,33 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
             mfc='red',mec='black', ecolor="black",lw=2,
             ms=marker_size, mew=1,ls="",label="$E$",barsabove=True)
         # Precipitation
-        ax1.errorbar([1,2,3,4],self.budget_df["Precip"].values,
-            yerr=[self.budget_df["Precip"].values-\
-                  self.budget_df["Precip_min"].values,
-                  self.budget_df["Precip_max"].values-\
-                  self.budget_df["Precip"].values],
+        ax1.errorbar([1,2,3,4],-1*self.budget_df["Precip"].values,
+            yerr=[self.budget_df["Precip_max"].values-\
+                  self.budget_df["Precip"].values,
+                  self.budget_df["Precip"].values-\
+                  self.budget_df["Precip_min"].values],
             marker="s",ecolor="black",mfc="lightblue",
             mec="black",ms=marker_size,mew=1,lw=2,
             ls="",label="-$P$",barsabove=True)
                      # ---> think about direction and sign of errorbars
             
         # Mass divergence
-        ax1.errorbar(np.array([1.1,2.1,3.1,4.1]),self.budget_df["DIV_mass"].values,
+        ax1.errorbar(np.array([1.1,2.1,3.1,4.1]),
+            self.budget_df["DIV_mass"].values,
             yerr=self.budget_df["DIV_mass_unc"].values,marker="s",
             mfc="teal",ls="",ms=marker_size,mew=1,markeredgecolor="k",
-            lw=2,ecolor="k",label="$DIV_{mass}$",barsabove=True)
+            lw=2,ecolor="k",label="$-IDIV_{\mathrm{mass}}$",
+            barsabove=True)
         
             #yerr=[mass_div_series_max-mass_div_series,mass_div_series-mass_div_series_min],
             
         # Moisture Advection
         ax1.errorbar(np.array([1.2,2.2,3.2,4.2]),self.budget_df["ADV_q"].values,
-                     yerr=self.budget_df["ADV_q_unc"],
-                     #yerr=[adv_q_series_max-adv_q_series,adv_q_series-adv_q_series_min],
-                     marker="s",ms=marker_size,mew=1,mfc="darkgreen",ls="",
-                     markeredgecolor="k",ecolor="k",
-                     lw=2,label="$ADV_{q}$",barsabove=True)
+            yerr=self.budget_df["ADV_q_unc"],
+            #yerr=[adv_q_series_max-adv_q_series,adv_q_series-adv_q_series_min],
+            marker="s",ms=marker_size,mew=1,mfc="darkgreen",ls="",
+            markeredgecolor="k",ecolor="k",lw=2,
+            label="$IADV_{\mathrm{q}}$",barsabove=True)
         #Residuals
         if with_residuals:
             ax1.errorbar(np.array([1.3,2.3,3.3,4.3]),
@@ -411,7 +413,7 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
             col_number+=1
         legend=ax1.legend(loc="lower right",
             ncol=col_number,frameon=True,
-            fontsize=17)
+            fontsize=16)
         frame = legend.get_frame()
         frame.set_color('lightgrey')
         frame.set_edgecolor('black')
@@ -451,23 +453,30 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         ax.spines['bottom'].set_linewidth(2)
         ax.xaxis.set_tick_params(width=2,length=4)
         ax.yaxis.set_tick_params(width=2,length=4)
-        ax.bar([0.75,1.75,2.75,3.75],self.budget_df["IWV_dt"],width=0.1,edgecolor="white",
-                   yerr=self.budget_df["IWV_dt_unc"],color="grey",alpha=0.5)
-        ax.bar([0.85,1.85,2.85,3.85],self.budget_df["ADV_q"],width=0.1,edgecolor="white",
-                   yerr=self.budget_df["ADV_q_unc"],
-                   color="lightgreen",alpha=0.5)
-        ax.bar([0.95,1.95,2.95,3.95],self.budget_df["DIV_mass"],
+        
+        ax.bar([0.75,1.75,2.75,3.75],self.budget_df["IWV_dt"],
                width=0.1,edgecolor="white",
-               yerr=self.budget_df["DIV_mass_unc"],
-               color="teal",alpha=0.5)
-        ax.bar([1.05,2.05,3.05,4.05],self.budget_df["Precip"],
+               yerr=self.budget_df["IWV_dt_unc"],color="grey",alpha=0.5)
+        ax.bar([0.85,1.85,2.85,3.85],
+               self.budget_df["Evap"],width=0.1,edgecolor="white",
+                   yerr=self.budget_df["Evap_unc"],color="red",alpha=0.5)
+        ax.bar([0.95,1.95,2.95,3.95],-self.budget_df["Precip"],
                width=0.1,edgecolor="white",
                yerr=(self.budget_df["Precip_max"]-\
                     self.budget_df["Precip_min"])/2,
                    color="lightblue",alpha=0.5)
-        ax.bar([1.15,2.15,3.15,4.15],
-               self.budget_df["Evap"],width=0.1,edgecolor="white",
-                   yerr=self.budget_df["Evap_unc"],color="red",alpha=0.5)
+        
+        ax.bar([1.05,2.05,3.05,4.05],self.budget_df["DIV_mass"],
+               width=0.1,edgecolor="white",
+               yerr=self.budget_df["DIV_mass_unc"],
+               color="teal",alpha=0.5)
+            
+        ax.bar([1.15,2.15,3.15,4.15],self.budget_df["ADV_q"],
+               width=0.1,edgecolor="white",
+                   yerr=self.budget_df["ADV_q_unc"],
+                   color="lightgreen",alpha=0.5)
+        
+        
         ax.set_ylim([-1,1.5])
         ax.set_yticks([-1,-.5,0,.5,1,1.5])
         ax.legend()
@@ -708,11 +717,11 @@ class HALO_AC3_evaporation(HALO_AC3_Budget_Plots):
 class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
     def __init__(self,cmpgn_cls,halo_df,halo_era5,halo_icon_hmp,hydro_ds,
         processed_radar,warm_radar_rain,warm_icon_rain,
-        cold_radar_rain,cold_icon_rain,
-        precipitation_rate,strong_precip_rate,radar_str,
-        flight,ar_of_day,grid_name="ERA5",do_instantan=False,is_flight_campaign=True,
+        cold_radar_rain,cold_icon_rain,precipitation_rate,
+        strong_precip_rate,radar_str,flight,ar_of_day,
+        grid_name="ERA5",do_instantan=False,is_flight_campaign=True,
         major_path=os.getcwd(),sector="warm",calibrated_radar=True,
-        aircraft=None,instruments=[],flights=[],
+        attenuation_value=4,aircraft=None,instruments=[],flights=[],
         interested_flights="all"):
         
         super().__init__(cmpgn_cls,flight,ar_of_day)
@@ -742,6 +751,7 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         self.processed_radar       = processed_radar
         self.precipitation_rate    = precipitation_rate
         self.strong_precip_rate    = strong_precip_rate
+        self.attenuation_value     = attenuation_value
         self.warm_radar_rain       = warm_radar_rain
         self.warm_icon_rain        = warm_icon_rain
         self.cold_radar_rain       = cold_radar_rain
@@ -819,6 +829,10 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
                         self.halo_df["longitude"].max()+2,
                         self.halo_df["latitude"].min()-1.75,
                         self.halo_df["latitude"].max()+2])
+        #%print(sector_radar_rain.loc["2022-03-15 11:25":"2022-03-15 11:39"])
+        sector_radar_rain.loc["2022-03-15 11:25":"2022-03-15 11:43"]=np.nan
+        #print(sector_radar_rain.loc["2022-03-15 11:25":"2022-03-15 11:39"]["rate"])
+        sector_radar_rain=sector_radar_rain.dropna(subset="rate",how="all")
         if sector!="":
             # cut the halo for the rectangle just to the specific sector
             halo_df=self.halo_df.loc[sector_radar_rain.index]
@@ -827,21 +841,21 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
             else:
                 halo_color="purple"
     
-        ax1.plot([halo_df["longitude"].min(),halo_df["longitude"].min(),
-                  halo_df["longitude"].max(),halo_df["longitude"].max(),
-                  halo_df["longitude"].min()],
-                 [halo_df["latitude"].min()-.5,halo_df["latitude"].max(),
-                  halo_df["latitude"].max(),halo_df["latitude"].min()-.5,
-                  halo_df["latitude"].min()-.5],
+        #ax1.plot([halo_df["longitude"].min(),halo_df["longitude"].min()+2,
+        #          halo_df["longitude"].max()+1,halo_df["longitude"].max()-1,
+        #          halo_df["longitude"].min()],
+        #        [halo_df["latitude"].min()+.5,halo_df["latitude"].max(),
+        #          halo_df["latitude"].max()-.5,halo_df["latitude"].min()-.5,
+        #          halo_df["latitude"].min()+.5],
+        ax1.plot([-7.5,-1.5,
+                  13,5,-7.5],
+                 [72,77,75.5,70.5,72],
                  lw=3,ls="-",color="white",
                  transform=ccrs.PlateCarree(),zorder=3)
     
-        ax1.plot([halo_df["longitude"].min(),halo_df["longitude"].min(),
-                  halo_df["longitude"].max(),halo_df["longitude"].max(),
-                  halo_df["longitude"].min()],
-                 [halo_df["latitude"].min()-0.5,halo_df["latitude"].max(),
-                  halo_df["latitude"].max(),halo_df["latitude"].min()-.5,
-                  halo_df["latitude"].min()-0.5],
+        ax1.plot([-7.5,-1.5,
+                  13,5,-7.5],
+                 [72,77,75.5,70.5,72],
                  lw=2,ls="--",color=halo_color,
                  transform=ccrs.PlateCarree(),zorder=3)
     
@@ -864,7 +878,7 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         fig_name=self.flight[0]+"_"+self.ar_of_day+"_"+sector+\
             "_"+fig_name
         fig_path=self.plot_path
-        sns.despine(offset=1)
+        #sns.despine(offset=1)
         plt.savefig(fig_path+fig_name,dpi=300,bbox_inches="tight")
         print("Figure saved as ",fig_path+fig_name)
 
@@ -947,6 +961,7 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
                         regridded_warm_radar_rain,
                         do_sensitivity_study=False,do_conditional_dist=False,
                         radar_era5=pd.DataFrame()):
+        matplotlib.rcParams.update({"font.size":24})
         sns.set_style("white")
         
         x1 = sector_precip_icon_field.values
@@ -1101,8 +1116,9 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         print("Figure saved as:",self.plot_path+fig_name)
 
     def plot_radar_rain_rates(self,sector_times,sub_sector_precip_rates,
-                              sector="internal",add_surface_mask=False,
-                              save_as_manuscript_plot=False):
+            mlayer_height,sector="internal",add_surface_mask=False,
+            add_mlayer_height=False,
+            save_as_manuscript_plot=False):
         """
         This plotting module creates the manuscript Figure 07 if we consider
         RF05 and AR entire 1. The multiplots contain dBZ, LDR and precip rates.
@@ -1248,6 +1264,9 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         # Radar LDR
         C2=axs[1].pcolor(time,y,np.array(sector_radar["LDRg"][:]).T,
                                  cmap=cmaeri.batlowK,vmin=-25, vmax=-10)        
+        if add_mlayer_height:
+            axs[1].plot(mlayer_height,lw=3,color="white")
+            axs[1].plot(mlayer_height,lw=1,color="dimgrey")
         axs[1].set_yticks([0,500,1000])
         axs[1].set_ylim([0,1000])
         axs[1].set_yticklabels(["0","0.5","1"])
@@ -1267,7 +1286,7 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         # Precipitation rates
         ##########################################################################
         axs[2].plot(self.precipitation_rate["mean_rain"],
-            lw=3,color="darkgreen",label="Avg_R: "+str(round(float(\
+            lw=3,color="darkgreen",label="Avg$_{\mathrm{R}}$: "+str(round(float(\
                 sub_sector_precip_rates["mean_rain"].mean()),2)))
         axs[2].plot(self.precipitation_rate["r_norris"],
             lw=1,color="lightgreen",label="Nor2020: "+str(round(float(\
@@ -1282,7 +1301,7 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
     
         # Snow 
         axs[2].plot(self.precipitation_rate["mean_snow"],lw=3,color="darkblue",
-            label="Avg_S: "+str(round(float(\
+            label="Avg$_{\mathrm{S}}$: "+str(round(float(\
                 sub_sector_precip_rates["mean_snow"].mean()),2)))
         axs[2].plot(self.precipitation_rate["s_schoger"],
             lw=0.5,color="lightblue",label="Sch2021: "+str(round(float(\
@@ -1295,7 +1314,7 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
                 sub_sector_precip_rates["s_heymsfield"].mean()),2)))
     
         axs[2].set_ylim([0,1.4])
-        axs[2].legend(title="Pre-frontal precip, cond. mean (mm/h)",
+        axs[2].legend(title="Pre-frontal precipitation, cond. mean (mm/h)",
                       loc="upper left",ncol=4,fontsize=font_size-4)
         axs[2].set_xticks=axs[1].get_xticks()
         axs[2].set_ylabel("Precipitation\nrate ($\mathrm{mmh}^{-1}$)")
@@ -1409,8 +1428,8 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         internal_snow_rate=internal_precipitation_rate[["s_schoger","s_matrosov",
                                                     "s_heymsfield"]]
         #unc_period=internal_precipitation_rate["precip_phase"]=="uncertain"
-        
-        precip_rate_fig=plt.figure(figsize=(14,7))
+        matplotlib.rcParams.update({"font.size":22})
+        precip_rate_fig=plt.figure(figsize=(16,9))
         ax1=precip_rate_fig.add_subplot(111)
         ax1.fill_between(internal_rain_rate.index,
             internal_rain_rate.min(axis=1).values,
@@ -1435,8 +1454,8 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         ax1.plot(strong_internal_precip_rate.index,
             strong_internal_precip_rate["rate"].values,
             color="purple",lw=2,
-            label="HALO (+4dBZ): "+str(round(float(
-            strong_internal_precip_rate["rate"].loc[\
+            label="HALO (+"+str(int(self.attenuation_value))+" dBZ): "+\
+                str(round(float(strong_internal_precip_rate["rate"].loc[\
                 sub_sector_precip_rates.index].mean()),2)))
         ###
         ax1.plot(internal_era5["Interp_Precip"],
@@ -1485,7 +1504,8 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         precip_rate_fig.savefig(fig_path+fig_name,dpi=300,bbox_inches="tight")
         print("Figure saved as:",fig_path+fig_name)
 
-    def precip_sector_trends(self,flight_sequence):
+    def precip_sector_trends(self,flight_sequence,
+                             save_as_essay_fig=True):
         import quicklook_dicts
         import measurement_instruments_ql
         import halodataplot
@@ -1530,8 +1550,12 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
             HALO_Devices_cls.update_major_data_path(self.cmpgn_cls.campaign_path)
             Bahamas_cls=measurement_instruments_ql.BAHAMAS(HALO_Devices_cls)
             Radar_cls=measurement_instruments_ql.RADAR(HALO_Devices_cls)
-            prc_radar=Radar_cls.open_version_specific_processed_radar_data(
+            Radar_cls.radar_ds=Radar_cls.open_version_specific_processed_radar_data(
                 for_calibrated_file=self.calibrated_radar)
+            Radar_cls.correct_for_gaseous_attenuation()
+            #if f>1:
+            #    Radar_cls.cfg_dict["flight"]="RF06"
+            prc_radar=Radar_cls.radar_ds
             halo_df=prc_radar[["lat","lon"]].to_dataframe()#Bahamas_cls.op
             halo_df=halo_df.rename({"lat":"latitude","lon":"longitude"},
                                            axis=1)
@@ -1561,9 +1585,9 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
             prec_rate.index=pd.DatetimeIndex(prec_rate.index)    
             temp_warm_radar_precip_field,temp_warm_icon_precip_track=\
                 temporary_Precip_cls.select_warm_precip(prec_rate,
-                                        self.halo_icon_hmp,include_icon=False)
-            #print(temp_warm_radar_precip_field.index[0],
-            #      temp_warm_radar_precip_field.index[-1])
+                        self.halo_icon_hmp,include_icon=False)
+            
+            
             inflow_times=self.times_dict[seq]["inflow"]
             internal_times=self.times_dict[seq]["internal"]
             outflow_times=self.times_dict[seq]["outflow"]
@@ -1576,14 +1600,15 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
                     {"time":slice(outflow_times[0],inflow_times[-1])})
             internal_warm=temp_warm_radar_precip_field.loc[\
                         internal_times[0]:internal_times[-1]]
-            internal_warm[["mean_snow","mean_rain"]]=internal_warm[\
-                            ["mean_snow","mean_rain"]].fillna(0)
+            internal_warm[["mean_snow","mean_mixed","mean_rain"]]=\
+                internal_warm[\
+                ["mean_snow","mean_mixed","mean_rain"]].fillna(0)
             internal_warm["rate"]=internal_warm["mean_snow"]+\
-                internal_warm["mean_rain"]
+                internal_warm["mean_rain"]+\
+                    internal_warm["mean_mixed"]
             
             sector_radar=prc_radar.sel(
                 {"time":slice(internal_times[0],internal_times[-1])})
-            #testing sector_radar=sector_radar.isel({"time":slice(500,1000)})
             
             y=np.array(sector_radar["height"][:])
             ###################################################################
@@ -1602,8 +1627,9 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
                             cmap=cmaeri.roma_r,vmin=-30,vmax=30)
             if pd.DatetimeIndex(sector_radar.time[0])<internal_warm.index[0]:
                 #print(sector_radar.time[0],internal_warm.index[0])
-                axs[f*2].axvspan(pd.Timestamp(sector_radar.time.values[0]),
-                           pd.Timestamp(internal_warm.index[0]),
+                axs[f*2].axvspan(
+                    pd.Timestamp(sector_radar.time.values[0]),
+                    pd.Timestamp(internal_warm.index[0]),
                            alpha=0.4, color='grey',zorder=2)
             else:
                 axs[f*2].axvspan(pd.Timestamp(internal_warm.index[-1]),
@@ -1626,36 +1652,50 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
             axs[f*2].set_yticks([0,2000,4000,6000,8000,10000,12000])
             axs[f*2].set_ylim([0,10000])
             axs[f*2].set_yticklabels(["0","2","4","6","8","10","12"])
-            if f==1:
+            axs[f*2].text(0.185,0.55,"Post-frontal",bbox=dict(
+               facecolor='whitesmoke',edgecolor="k",boxstyle="round",alpha=0.9),
+               ha='center',color="slateblue", va='center',fontsize=font_size,
+               transform=axs[f*2].transAxes,zorder=5)
+            
+            if f==0:
                 axs[f*2].set_ylabel("Height (km)")
                 axs[f*2+1].set_ylabel("Rate ($\mathrm{mm\,h}^{-1}$)")
             
             # Add rain rates
             prec_rate=prec_rate.fillna(0)
-            prec_rate["rate"]=prec_rate["mean_snow"]+prec_rate["mean_rain"]+\
-                prec_rate["mean_mixed"]
+            prec_rate["rate"]=prec_rate["mean_snow"]+\
+                prec_rate["mean_rain"]+prec_rate["mean_mixed"]
             internal_precipitation_rate=prec_rate.loc[\
-                                        internal_times[0]:internal_times[-1]] 
+                        internal_times[0]:internal_times[-1]] 
             internal_rain_rate=internal_precipitation_rate[\
-                                        ["r_norris","r_palmer","r_chandra"]]
+                        ["r_norris","r_palmer","r_chandra"]]
             internal_snow_rate=internal_precipitation_rate[
                 ["s_schoger","s_matrosov","s_heymsfield"]]
-            internal_unc_rate=internal_precipitation_rate[["min_mixed","max_mixed"]]
+            internal_unc_rate=internal_precipitation_rate[[\
+                                    "min_mixed","max_mixed"]]
             axs[f*2+1].fill_between(internal_rain_rate.index,
-                                    internal_rain_rate.min(axis=1).values,
-                                    y2=internal_rain_rate.max(axis=1).values,
-                                    color="mediumseagreen",label="HALO rain")
+                internal_rain_rate.min(axis=1).values,
+                y2=internal_rain_rate.max(axis=1).values,
+                color="mediumseagreen",label="HALO rain")
             axs[f*2+1].fill_between(internal_snow_rate.index,
-                                    internal_snow_rate.min(axis=1).values,
-                                    y2=internal_snow_rate.max(axis=1).values,
-                                    color="lightblue",label="HALO snow")
+                internal_snow_rate.min(axis=1).values,
+                y2=internal_snow_rate.max(axis=1).values,
+                color="lightblue",label="HALO snow")
             axs[f*2+1].fill_between(internal_unc_rate.index,
-                                    internal_unc_rate.min(axis=1).values,
-                                    y2=internal_unc_rate.max(axis=1).values,
-                                    color="grey",label="HALO mixed")
+                internal_unc_rate.min(axis=1).values,
+                y2=internal_unc_rate.max(axis=1).values,
+                color="grey",label="HALO mixed")
+            axs[f*2+1].text(0.7,0.7,"Mean rate:"+\
+                str(round(internal_warm["rate"].mean(),2))+\
+                "$\mathrm{mm\,h}^{-1}$",
+                fontsize=14,transform=\
+                    axs[f*2+1].transAxes)
+            
+                
             sns.despine(ax=axs[f*2+1],offset=1)
             axs[f*2+1].plot(internal_precipitation_rate.index,
-                internal_precipitation_rate["rate"].values,color="white",lw=3)
+                internal_precipitation_rate["rate"].values,
+                color="white",lw=3)
             axs[f*2+1].plot(internal_precipitation_rate.index,
                 internal_precipitation_rate["rate"].values,
                 color="orchid",lw=1,label="HALO mean: "+str(round(float(
@@ -1664,8 +1704,10 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
                                  pd.Timestamp(internal_times[-1])])
             if f==3:
                 axs[f*2+1].set_xlabel("Time (UTC)")
-            axs[f*2].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-            axs[f*2+1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))###
+            axs[f*2].xaxis.set_major_formatter(
+                mdates.DateFormatter('%H:%M'))
+            axs[f*2+1].xaxis.set_major_formatter(
+                mdates.DateFormatter('%H:%M'))###
             
             if pd.DatetimeIndex(sector_radar.time[0])<internal_warm.index[0]:
                 #print(sector_radar.time[0],internal_warm.index[0])
@@ -1716,20 +1758,35 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
             axs[f*2].tick_params("y",length=6,width=2)
             axs[f*2+1].tick_params("y",length=6,width=2)
             
-            axs[f*2].text(0.01,0.925,fig_labels[f*2],fontsize=14,color="k",
+            axs[f*2].text(0.01,0.875,fig_labels[f*2]+" S"+str(f+1),
+                          fontsize=font_size,color="k",
+                          bbox=dict(facecolor='whitesmoke',edgecolor="k",
+                                    boxstyle="round",alpha=0.95),
+                          #   ha='center',color="k", va='center',fontsize=font_size,
+                          #   transform=axs[f*2].transAxes,zorder=5
                           transform=axs[f*2].transAxes,zorder=5)
-            axs[f*2+1].text(0.01,0.875,fig_labels[f*2+1],fontsize=14,color="k",
-                            transform=axs[f*2+1].transAxes,zorder=5)
-        
+            #axs[f*2].text(0.95,0.91,"S"+str(f+1),bbox=dict(
+            #   facecolor='lightgrey',edgecolor="k",boxstyle="round",alpha=0.95),
+            #   ha='center',color="k", va='center',fontsize=font_size,
+            #   transform=axs[f*2].transAxes,zorder=5)
+            axs[f*2+1].text(0.01,0.75,fig_labels[f*2+1]+" S"+str(f+1),
+                fontsize=font_size,color="k",bbox=dict(facecolor='whitesmoke',
+                        edgecolor="k",boxstyle="round",alpha=0.95),
+                transform=axs[f*2+1].transAxes,zorder=5)
+            
         #axs[f*2+1].
-        caxis=precip_trend_fig.add_axes([0.,-0.03,0.3,0.02])
+        caxis=precip_trend_fig.add_axes([0.6,-0.03,0.3,0.02])
         cb = plt.colorbar(C1,cax=caxis,orientation='horizontal',extend="both")
         cb.set_label('Reflectivity (dBZ)')
             
         #plt.subplots_adjust(hspace=-0.1,wspace=-0.1)
         fig_path=self.plot_path
         fig_name="Precip_internal_tendency.png"
-        precip_trend_fig.savefig(fig_path+fig_name,dpi=300,bbox_inches="tight")
+        if save_as_essay_fig:
+            fig_name="Fig3_4_"+fig_name
+        
+        precip_trend_fig.savefig(fig_path+fig_name,dpi=600,
+                                 bbox_inches="tight")
         print("Figure saved as:", fig_path+fig_name)        
 
 class HALO_AC3_IWV_tendency(HALO_AC3_Budget_Plots):
@@ -2010,7 +2067,7 @@ class HALO_AC3_IWV_tendency(HALO_AC3_Budget_Plots):
                 if self.sector=="warm":
                     ax1.text(1.4,7,
                         "$\dfrac{\delta {IWV}_{\mathrm{Sonde}}}{\delta t}=$"+\
-                            str(round(self.iwv_sonde_diff_h,2))+" $\mathrm{mmh}^{-1}$",
+                            str(round(self.iwv_sonde_diff_h,2))+" $\mathrm{mm\,h}^{-1}$",
                             fontsize=25)
                     ax1.text(1.4,6,
                         "$\dfrac{\delta {IWV}_{\mathrm{ICON}}}{\delta t}=$"+\
@@ -2018,7 +2075,7 @@ class HALO_AC3_IWV_tendency(HALO_AC3_Budget_Plots):
                             " $\mathrm{mmh}^{-1}$",fontsize=25)
                     ax1.text(1.4,5,
                         "$\dfrac{\delta {IWV}_{\mathrm{HAMP}}}{\delta t}=$"+\
-                            str(round(self.hamp_iwv_diff_h[-1],2))+" $\mathrm{mmh}^{-1}$",
+                            str(round(self.hamp_iwv_diff_h[-1],2))+" $\mathrm{mm\,h}^{-1}$",
                             fontsize=25)
                 ax1.xaxis.set_tick_params(width=3,length=10)
                 ax1.yaxis.set_tick_params(width=3,length=10)
@@ -2037,13 +2094,13 @@ class HALO_AC3_IWV_tendency(HALO_AC3_Budget_Plots):
     def plot_iwv_comparison_sonde_hamp(self,
             #iwv_sonde,mwr,halo_df,
             half_period):
-        
-        internal_map=plt.figure(figsize=(18,12))
+        matplotlib.rcParams.update({"font.size":24})
+        internal_map=plt.figure(figsize=(12,8))
         ax1=internal_map.add_subplot(111)
-        self.hamp_iwv_internal.plot.hist(bins=np.linspace(5,20,11),
+        self.hamp_iwv_internal.plot.hist(bins=np.linspace(5,20,21),
                                     alpha=0.3,xlim=[10,20],ax=ax1)
     
-        ins = ax1.inset_axes([0.1,0.1,0.3,0.35])
+        ins = ax1.inset_axes([0.15,0.25,0.3,0.35])
         ins.plot(self.mwr["lon"],self.mwr["lat"],color="grey",ls="--",lw=1)
         ins.scatter(self.halo_df["longitude"],self.halo_df["latitude"],s=3,color="k")
         colors=["blue","orange"]
@@ -2061,25 +2118,40 @@ class HALO_AC3_IWV_tendency(HALO_AC3_Budget_Plots):
     
             sonde_period_start= pd.Timestamp(sonde_time)-pd.Timedelta(half_period)
             sonde_period_end  = pd.Timestamp(sonde_time)+pd.Timedelta(half_period)
-            rlv_geoloc=self.mwr.sel({"time":slice(sonde_period_start,sonde_period_end)})
+            rlv_geoloc=self.mwr.sel({"time":slice(sonde_period_start,
+                                                  sonde_period_end)})
             sonde_lon=self.mwr["lon"].sel({"time":sonde_time})
             sonde_lat=self.mwr["lat"].sel({"time":sonde_time})
             ins.scatter(rlv_geoloc["lon"],rlv_geoloc["lat"],color=colors[i])
             ins.scatter(sonde_lon,sonde_lat, s=100, marker="v",
                         color=colors[i],lw=2,edgecolor="k")
-            ins.set_xlim([self.halo_df["longitude"].min()-1,
+        ins.set_xlim([self.halo_df["longitude"].min()-1,
                           self.halo_df["longitude"].max()+1])
-            ins.set_ylim([self.halo_df["latitude"].min()-1,
+        ins.set_xlabel("Lon (°E)")
+        ins.set_ylabel("Lat (°N)")
+        
+        ins.set_ylim([self.halo_df["latitude"].min()-1,
                           self.halo_df["latitude"].max()+1])
-            ax1.set_xlabel("HAMP-based IWV / $\mathrm{kg}\,\mathrm{m}^{-2}$")
-            sns.despine(ax=ax1,offset=5)
-            fig_name=self.flight[0]+"_"+self.ar_of_day+"_"+self.sector+\
+        ins.set_yticks([72,74,76,78])
+        for spine in ["bottom","left","right","top"]:
+            ins.spines[spine].set_linewidth(2)
+        ax1.set_xlabel("HAMP-based IWV ($\mathrm{kg}\,\mathrm{m}^{-2})$")
+        
+        ax1.set_yticks([0,250,500])
+        ax1.set_ylim([0,500])
+        sns.despine(ax=ax1,offset=5)
+        for spine in ["bottom","left"]:
+            ax1.spines[spine].set_linewidth(2)
+        ax1.tick_params("x",width=2,length=8)
+        ax1.tick_params("y",width=2,length=8)
+            
+        fig_name=self.flight[0]+"_"+self.ar_of_day+"_"+self.sector+\
                 "_hamp_sonde_iwv_comparison"+"_twice_"+half_period+".png"
-            if self.flight[0]=="RF05" and self.ar_of_day=="AR_entire_1":
-                fig_name="Fig07_"+fig_name
-            internal_map.savefig(self.plot_path+fig_name,
-                                 dpi=300,bbox_inches="tight")
-            print("Figure saved as:",self.plot_path+fig_name)
+        if self.flight[0]=="RF05" and self.ar_of_day=="AR_entire_1":
+                fig_name="Fig05_"+fig_name
+        internal_map.savefig(self.plot_path+fig_name,dpi=600,
+                             bbox_inches="tight")
+        print("Figure saved as:",self.plot_path+fig_name)
 
 # Compare sondes and HAMP IWV with ERA5
     def plot_iwv_flight_trend(self,surface_index,half_period):

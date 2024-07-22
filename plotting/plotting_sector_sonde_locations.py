@@ -18,7 +18,7 @@ import reanalysis as Reanalysis
 
 def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
          internal_sondes_dict,snd_halo_icon_hmp,plot_path,
-         add_other_sectors=False):
+         add_other_sectors=False,add_other_sondes=False):
     """
     
 
@@ -107,18 +107,22 @@ def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
     ax1.set_extent([halo_df["longitude"].min()-2,halo_df["longitude"].max()+2,
                 halo_df["latitude"].min()-2,halo_df["latitude"].max()+2])
     # all sondes
-    ax1.scatter(Dropsondes["Lon"].values,Dropsondes["Lat"].values,
+    if add_other_sondes:
+        ax1.scatter(Dropsondes["Lon"].values,Dropsondes["Lat"].values,
                 marker="v",s=8,color="lightgrey",edgecolor="darkgrey",
                 transform=ccrs.PlateCarree(),zorder=2)
+        
+        ax1.scatter(Dropsondes["Lon"].iloc[internal_sondes_dict["warm"][0]],
+                Dropsondes["Lat"].iloc[internal_sondes_dict["warm"][0]],
+                marker="o",s=100,color="grey",edgecolor="k",
+                transform=ccrs.PlateCarree(),zorder=3)
     # warm sectors
     ax1.scatter(Dropsondes["Lon"].iloc[relevant_sondes_dict["warm_sector"]["in"]],
         Dropsondes["Lat"].iloc[relevant_sondes_dict["warm_sector"]["in"]],
         marker="v",s=100,color="orange",edgecolor="k",
         transform=ccrs.PlateCarree(),zorder=3)
-    ax1.scatter(Dropsondes["Lon"].iloc[internal_sondes_dict["warm"][0]],
-            Dropsondes["Lat"].iloc[internal_sondes_dict["warm"][0]],
-            marker="o",s=100,color="grey",edgecolor="k",
-            transform=ccrs.PlateCarree(),zorder=3)
+    
+    
         
     ax1.scatter(Dropsondes["Lon"].iloc[relevant_sondes_dict["warm_sector"]["out"]],
             Dropsondes["Lat"].iloc[relevant_sondes_dict["warm_sector"]["out"]],
