@@ -2,7 +2,7 @@
 """
 Created on Thu Feb  2 21:16:43 2023
 
-@author: u300737
+@author: Henning Dorff
 """
 
 # -*- coding: utf-8 -*-

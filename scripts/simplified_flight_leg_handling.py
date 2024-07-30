@@ -2,7 +2,7 @@
 """
 Created on Thu Mar  9 12:08:19 2023
 
-@author: u300737
+@author: Henning Dorff
 """
 
 def simplified_run_grid_main(config_file_path="",

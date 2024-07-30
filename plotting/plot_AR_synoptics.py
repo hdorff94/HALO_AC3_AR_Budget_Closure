@@ -2,7 +2,7 @@
 """
 Created on Tue Feb  6 13:16:37 2024
 
-@author: u300737
+@author: Henning Dorff
 """
 def main():
     #%% Import

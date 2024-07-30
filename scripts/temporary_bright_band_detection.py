@@ -2,7 +2,7 @@
 """
 Created on Fri Mar 24 08:44:18 2023
 
-@author: u300737
+@author: Henning Dorff
 """
 
 #!/usr/bin/env python3

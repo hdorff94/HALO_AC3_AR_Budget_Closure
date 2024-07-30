@@ -2,7 +2,7 @@
 """
 Created on Tue Feb 13 09:45:59 2024
 
-@author: u300737
+@author: Henning Dorff
 """
 
 import os
@@ -384,7 +384,8 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
             #yerr=[mass_div_series_max-mass_div_series,mass_div_series-mass_div_series_min],
             
         # Moisture Advection
-        ax1.errorbar(np.array([1.2,2.2,3.2,4.2]),self.budget_df["ADV_q"].values,
+        ax1.errorbar(np.array([1.2,2.2,3.2,4.2]),
+                     self.budget_df["ADV_q"].values,
             yerr=self.budget_df["ADV_q_unc"],
             #yerr=[adv_q_series_max-adv_q_series,adv_q_series-adv_q_series_min],
             marker="s",ms=marker_size,mew=1,mfc="darkgreen",ls="",
@@ -393,9 +394,11 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         #Residuals
         if with_residuals:
             ax1.errorbar(np.array([1.3,2.3,3.3,4.3]),
-                self.budget_df["residual"],yerr=self.budget_df["residual_unc"],
+                self.budget_df["residual"],
+                yerr=self.budget_df["residual_unc"],
                 marker="x",mfc="k",mec="k",ecolor="k",lw=2,
-                ms=marker_size,mew=1,ls="",label="residual",barsabove=True)
+                ms=marker_size,mew=1,ls="",label="residual",
+                barsabove=True)
             
         ##
         ax1.axhline(y=0,ls="--",lw=2,color="k")
@@ -443,7 +446,7 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         ax.errorbar(np.array([1,2,3,4]),self.budget_df["residual"],
                 yerr=self.budget_df["residual_unc"],marker="X",mfc="red",
                 mec="k",ecolor="darkred",lw=4,ms=20,
-                mew=2,ls="",label="residual")
+                mew=2,ls="")
     
         ax.axhline(y=0,ls="--",lw=1,color="k")
         ax.set_ylabel("Moisture Budget \nContribution ($\mathrm{mm\,h}^{-1}$)")
@@ -456,30 +459,37 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         
         ax.bar([0.75,1.75,2.75,3.75],self.budget_df["IWV_dt"],
                width=0.1,edgecolor="white",
-               yerr=self.budget_df["IWV_dt_unc"],color="grey",alpha=0.5)
+               yerr=self.budget_df["IWV_dt_unc"],
+               label="$\delta IWV/ \delta t$",
+               color="grey",alpha=0.5)
         ax.bar([0.85,1.85,2.85,3.85],
                self.budget_df["Evap"],width=0.1,edgecolor="white",
-                   yerr=self.budget_df["Evap_unc"],color="red",alpha=0.5)
+                   yerr=self.budget_df["Evap_unc"],
+               label="$E$",color="red",alpha=0.5)
         ax.bar([0.95,1.95,2.95,3.95],-self.budget_df["Precip"],
                width=0.1,edgecolor="white",
                yerr=(self.budget_df["Precip_max"]-\
                     self.budget_df["Precip_min"])/2,
-                   color="lightblue",alpha=0.5)
+               label="$-P$",color="lightblue",alpha=0.5)
         
         ax.bar([1.05,2.05,3.05,4.05],self.budget_df["DIV_mass"],
                width=0.1,edgecolor="white",
                yerr=self.budget_df["DIV_mass_unc"],
+               label="$-IDIV_{\mathrm{mass}}$",
                color="teal",alpha=0.5)
             
         ax.bar([1.15,2.15,3.15,4.15],self.budget_df["ADV_q"],
                width=0.1,edgecolor="white",
-                   yerr=self.budget_df["ADV_q_unc"],
-                   color="lightgreen",alpha=0.5)
+               yerr=self.budget_df["ADV_q_unc"],
+               label="$IADV_{\mathrm{q}}$",
+               color="lightgreen",alpha=0.5)
         
         
         ax.set_ylim([-1,1.5])
         ax.set_yticks([-1,-.5,0,.5,1,1.5])
-        ax.legend()
+        ax.legend(loc="lower right",ncol=5,
+                  frameon=True,fontsize=16)
+        
         sns.despine(offset=10)
         file_end=".pdf"
         fig_name="HALO_Budget_residual_tendency"
@@ -649,25 +659,29 @@ class HALO_AC3_evaporation(HALO_AC3_Budget_Plots):
         evap_mm_h_unc           = self.Evap_cls.evap_mm_h_unc
         surface_data=self.Evap_cls.surface_data
         sst=self.Evap_cls.halo_era5["Interp_SST"]
-        matplotlib.rcParams.update({"font.size":24})
+        font_size=24
+        matplotlib.rcParams.update({"font.size":font_size})
         evap_halo_fig=plt.figure(figsize=(18,9))
         ax1=evap_halo_fig.add_subplot(211)
         ax2=evap_halo_fig.add_subplot(212)
         # Specific humidity
         
-        ax1.errorbar(surface_data.index,surface_data["Shum"]*1000, 
-                     yerr=0.4, markersize=15, color="lightgreen", 
-                     elinewidth=2,marker="v",markeredgecolor="k",
-                     linestyle="",label="q")
-        ax1.errorbar(surface_data.index,surface_data["Qsat"]*1000, yerr=0.4,
-                     markersize=15, color="darkgreen",
-                     elinewidth=2,marker="v",markeredgecolor="k",
-                     linestyle="",label="$q_{sat}$")
+        ax1.errorbar(surface_data.index,
+            surface_data["Shum"]*1000, yerr=0.4, 
+            markersize=15, color="lightgreen", 
+            elinewidth=2,marker="v",markeredgecolor="k",
+            linestyle="",label="q")
+        ax1.errorbar(surface_data.index,
+            surface_data["Qsat"]*1000, yerr=0.4,
+            markersize=15, color="darkgreen",
+            elinewidth=2,marker="v",markeredgecolor="k",
+            linestyle="",label="$q_{sat}$")
         ax1.axvspan(sst.index[0],
                     warm_internal_halo.index[0],
                     color="lightgrey",alpha=0.3,zorder=3)
         ax1.axvspan(warm_internal_halo.index[-1],
-                    sst.index[-1],color="lightgrey",alpha=0.3,zorder=3)
+            sst.index[-1],color="lightgrey",
+            alpha=0.3,zorder=3)
         if self.flight[0]=="RF05" and self.ar_of_day=="AR_entire_1":
             ax1.text(pd.Timestamp("2022-03-15 11:45"),2,
                      "Pre-frontal \ninternal leg",color="k")
@@ -704,16 +718,29 @@ class HALO_AC3_evaporation(HALO_AC3_Budget_Plots):
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
         ax2.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
         ax2.set_xlabel("Time (UTC)")
-        sector_label=self.budget_index[self.flight[0]+"_"+self.ar_of_day]
-        fig_name="Sonde_Evap_"+self.flight[0]+"_"+sector_label+".png"
+        ax1.text(0.005,0.9,"(a)",color="k",fontsize=font_size-4,
+            bbox=dict(facecolor='whitesmoke',
+            edgecolor="k",boxstyle="round",
+            alpha=0.8),transform=ax1.transAxes,zorder=10)
+        ax2.text(0.005,0.9,"(b)",color="k",fontsize=font_size-4,
+            bbox=dict(facecolor='whitesmoke',edgecolor="k",
+                      boxstyle="round",alpha=0.8),
+            transform=ax2.transAxes,zorder=10)
+        sector_label=self.budget_index[self.flight[0]+\
+                        "_"+self.ar_of_day]
+        fig_name="Sonde_Evap_"+self.flight[0]+"_"+\
+            sector_label+".png"
         sns.despine(offset=10)
-        if self.flight[0]=="RF05" and self.ar_of_day=="AR_entire_1":
+        if self.flight[0]=="RF05" and \
+            self.ar_of_day=="AR_entire_1":
             fig_name="Fig08_"+fig_name
             plot_path=self.plot_path
         else:
             plot_path=self.plot_path+"/supplements/"
-        evap_halo_fig.savefig(plot_path+fig_name,dpi=300,bbox_inches="tight")
-        print("Figure saved as:",plot_path+fig_name) 
+        evap_halo_fig.savefig(plot_path+fig_name,
+            dpi=300,bbox_inches="tight")
+        print("Figure saved as:",plot_path+fig_name)
+        
 class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
     def __init__(self,cmpgn_cls,halo_df,halo_era5,halo_icon_hmp,hydro_ds,
         processed_radar,warm_radar_rain,warm_icon_rain,
@@ -1265,8 +1292,12 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         C2=axs[1].pcolor(time,y,np.array(sector_radar["LDRg"][:]).T,
                                  cmap=cmaeri.batlowK,vmin=-25, vmax=-10)        
         if add_mlayer_height:
-            axs[1].plot(mlayer_height,lw=3,color="white")
-            axs[1].plot(mlayer_height,lw=1,color="dimgrey")
+            # above ML
+            axs[1].plot(mlayer_height+150,ls="-",lw=4,color="white")
+            axs[1].plot(mlayer_height+150,ls="--",lw=1,color="lightblue")
+            # Melting layer
+            #axs[1].plot(mlayer_height,lw=3,color="white")
+            #axs[1].plot(mlayer_height,lw=1,color="dimgrey")
         axs[1].set_yticks([0,500,1000])
         axs[1].set_ylim([0,1000])
         axs[1].set_yticklabels(["0","0.5","1"])
@@ -1291,7 +1322,10 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
         axs[2].plot(self.precipitation_rate["r_norris"],
             lw=1,color="lightgreen",label="Nor2020: "+str(round(float(\
                 sub_sector_precip_rates["r_norris"].mean()),2)))
-    
+        mixed_precip=self.precipitation_rate["mean_mixed"].copy()
+        mixed_precip[mixed_precip==0]=np.nan
+        axs[2].plot(mixed_precip,
+                    lw=1,color="grey")
         axs[2].plot(self.precipitation_rate["r_palmer"],
             lw=1,color="mediumseagreen",label="MP1948: "+str(round(float(\
                 sub_sector_precip_rates["r_palmer"].mean()),2)))
@@ -1386,6 +1420,15 @@ class HALO_AC3_precipitation(HALO_AC3_Budget_Plots,):
             axs[3].set_xlabel("Time (UTC)")
         # Limit axis spacing:
         plt.subplots_adjust(hspace=0.35)    # removes space between subplots
+        axs[0].text(0.02,0.9,"(a)",color="k",fontsize=font_size-2,
+            bbox=dict(facecolor='whitesmoke',edgecolor="k",boxstyle="round",
+                      alpha=0.8),transform=axs[0].transAxes,zorder=10)
+        axs[1].text(0.02,0.9,"(b)",color="k",fontsize=font_size-2,
+            bbox=dict(facecolor='whitesmoke',edgecolor="k",boxstyle="round",
+                      alpha=0.8),transform=axs[1].transAxes,zorder=10)
+        axs[2].text(0.02,0.9,"(c)",color="k",fontsize=font_size-2,
+            bbox=dict(facecolor='whitesmoke',edgecolor="k",boxstyle="round",
+                      alpha=0.8),transform=axs[2].transAxes,zorder=10)
         #box = axs[3].get_position()        
         #box.y0 = box.y0 + 0.025
         #box.y1 = box.y1 + 0.025        

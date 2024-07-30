@@ -2,7 +2,7 @@
 """
 Created on Tue Feb 28 13:54:08 2023
 
-@author: u300737
+@author: Henning Dorff
 """
 
 import os

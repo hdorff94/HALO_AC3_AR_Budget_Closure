@@ -2,7 +2,7 @@
 """
 Created on Mon Dec  4 10:52:57 2023
 
-@author: u300737
+@author: Henning Dorff
 """
 import os
 import sys
