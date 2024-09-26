@@ -93,6 +93,13 @@ def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
             levels=met_var_dict["levels"]["IVT_conv"],extend="both",
             transform=ccrs.PlateCarree(),
             cmap=met_var_dict["colormap"]["IVT_conv"],alpha=0.95)
+    Civt=ax1.contour(ds["longitude"],ds["latitude"],
+            ds[met_var_dict["ERA_name"]["IVT"]][last_hour,:,:],
+            levels=[100,200,300],cmap="Greys",linewidths=1.5,
+            linestyles=["-"],transform=ccrs.PlateCarree(),
+            zorder=5)
+    plt.clabel(Civt, inline=True,inline_spacing=-10,fontsize=10,zorder=5)
+    
     print("IVT conv. mapped")
 
     ax1.coastlines(resolution="50m")
@@ -110,29 +117,29 @@ def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
     if add_other_sondes:
         ax1.scatter(Dropsondes["Lon"].values,Dropsondes["Lat"].values,
                 marker="v",s=8,color="lightgrey",edgecolor="darkgrey",
-                transform=ccrs.PlateCarree(),zorder=2)
+                transform=ccrs.PlateCarree(),zorder=10)
         
         ax1.scatter(Dropsondes["Lon"].iloc[internal_sondes_dict["warm"][0]],
                 Dropsondes["Lat"].iloc[internal_sondes_dict["warm"][0]],
                 marker="o",s=100,color="grey",edgecolor="k",
-                transform=ccrs.PlateCarree(),zorder=3)
+                transform=ccrs.PlateCarree(),zorder=11)
     # warm sectors
     ax1.scatter(Dropsondes["Lon"].iloc[relevant_sondes_dict["warm_sector"]["in"]],
         Dropsondes["Lat"].iloc[relevant_sondes_dict["warm_sector"]["in"]],
         marker="v",s=100,color="orange",edgecolor="k",
-        transform=ccrs.PlateCarree(),zorder=3)
+        transform=ccrs.PlateCarree(),zorder=11)
     
     
         
     ax1.scatter(Dropsondes["Lon"].iloc[relevant_sondes_dict["warm_sector"]["out"]],
             Dropsondes["Lat"].iloc[relevant_sondes_dict["warm_sector"]["out"]],
             marker="v",s=100,color="orange",edgecolor="k",
-           transform=ccrs.PlateCarree(),zorder=3)
+           transform=ccrs.PlateCarree(),zorder=11)
     
     ax1.scatter(Dropsondes["Lon"].iloc[relevant_sondes_dict["cold_sector"]["in"]],
             Dropsondes["Lat"].iloc[relevant_sondes_dict["cold_sector"]["in"]],
            marker="v",s=100,color="blue",edgecolor="k",
-           transform=ccrs.PlateCarree(),zorder=3)
+           transform=ccrs.PlateCarree(),zorder=11)
     
     if add_other_sectors:
         if relevant_sondes_dict["cold_sector"]["out"].shape[0]>0:
@@ -188,6 +195,6 @@ def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
     fig_plot_path=plot_path+fig_name
     map_fig.savefig(fig_plot_path,dpi=300,bbox_inches="tight")
     print("Figure saved as:",fig_plot_path)
-#if __name__=="__main__":
-#    main()
+if __name__=="__main__":
+    main()
     

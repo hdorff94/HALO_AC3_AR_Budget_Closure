@@ -670,7 +670,7 @@ class HALO_AC3_evaporation(HALO_AC3_Budget_Plots):
             surface_data["Shum"]*1000, yerr=0.4, 
             markersize=15, color="lightgreen", 
             elinewidth=2,marker="v",markeredgecolor="k",
-            linestyle="",label="q")
+            linestyle="",label="$q$")
         ax1.errorbar(surface_data.index,
             surface_data["Qsat"]*1000, yerr=0.4,
             markersize=15, color="darkgreen",

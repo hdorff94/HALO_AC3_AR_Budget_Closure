@@ -396,7 +396,7 @@ class AR_mapper():
         fig.savefig(self.plot_path+fig_name,dpi=600,bbox_inches="tight")
         print("Figure saved as:", self.plot_path+fig_name)
     
-    def plot_AR_synoptics(self):
+    def plot_AR_synoptics(self, with_halo=True):
         # -*- coding: utf-8 -*-
         base_path=os.getcwd()+"/../../../"
         work_path=base_path+"/Work/GIT_Repository/"
@@ -404,11 +404,6 @@ class AR_mapper():
         budget_script_path=base_path+"/my_GIT/HALO_AC3_AR_Budget_Closure/scripts/"
         src_path=synth_git_path+"/src/"
         src_plot_path=synth_git_path+"/plotting/"
-        #sys.path.insert(1,synth_git_path)
-        #sys.path.insert(2,src_path)
-        #sys.path.insert(3,src_plot_path)
-        #sys.path.insert(4,work_path)
-        #sys.path.insert(5,budget_script_path)
         
         airborne_data_path=work_path+"hamp_processing_py\\hamp_processing_python\\"
         airborne_importer_path=airborne_data_path
@@ -565,7 +560,7 @@ class AR_mapper():
         ax1.set_extent([-40,25,55,85]) 
         ax2.set_extent([-40,25,55,85]) 
         
-        ax1.text(-0.07,0.95,"a)",fontsize=18,transform=ax1.transAxes)
+        ax1.text(-0.07,0.95,"(a)",fontsize=18,transform=ax1.transAxes)
         #calc_time=era5.hours[i]
         
         #-----------------------------------------------------------------#
@@ -641,12 +636,13 @@ class AR_mapper():
             collection.set_edgecolor("k")
         #-----------------------------------------------------------------#
         # HALO flight track
-        plot_halo_df=halo_df[halo_df.index.hour<hour]
-        ax1.plot(plot_halo_df["longitude"],
+        if with_halo:
+            plot_halo_df=halo_df[halo_df.index.hour<hour]
+            ax1.plot(plot_halo_df["longitude"],
                 plot_halo_df["latitude"],
                 lw=4,color="whitesmoke",transform=ccrs.PlateCarree(),zorder=11)
         
-        ax1.plot(plot_halo_df["longitude"],
+            ax1.plot(plot_halo_df["longitude"],
                 plot_halo_df["latitude"],
                 lw=2,ls="-",color="k",transform=ccrs.PlateCarree(),zorder=11)
         #-----------------------------------------------------------------#
@@ -654,7 +650,7 @@ class AR_mapper():
                     edgecolor="k",zorder=11)
         
         
-        ax2.text(-0.07,0.95,"b)",fontsize=18,transform=ax2.transAxes) 
+        ax2.text(-0.07,0.95,"(b)",fontsize=18,transform=ax2.transAxes) 
         sns_colour=sns.color_palette("Spectral",31)
         C2=ax2.contourf(theta_ds["longitude"],theta_ds["latitude"],
                         theta_ds["theta_e"][hour,:,:],
@@ -663,7 +659,7 @@ class AR_mapper():
                         cmap="jet",alpha=0.95)
         
         cb=map_fig.colorbar(C2,ax=ax2,orientation="horizontal",pad=0.03,shrink=0.7)
-        cb.set_label("$\Theta_{e}$ (K)")
+        cb.set_label("$\Theta_{\mathrm{e}}$ (K)")
         cb.set_ticks([255,265,275,285])
         
         C_p2=ax2.contour(ds["longitude"],ds["latitude"],ds["msl"][hour,:,:]/100,
@@ -684,11 +680,12 @@ class AR_mapper():
                          alpha=0.2,transform=ccrs.PlateCarree())
         for c,collection in enumerate(hatches2.collections):
             collection.set_edgecolor("k")
-        ax2.plot(plot_halo_df["longitude"],
+        if with_halo:
+            ax2.plot(plot_halo_df["longitude"],
                 plot_halo_df["latitude"],
                 lw=4,color="whitesmoke",transform=ccrs.PlateCarree(),zorder=11)
         
-        ax2.plot(plot_halo_df["longitude"],
+            ax2.plot(plot_halo_df["longitude"],
                 plot_halo_df["latitude"],
                 lw=2,ls="-",color="k",transform=ccrs.PlateCarree(),zorder=11)
         ### handle gridlines
@@ -708,7 +705,6 @@ class AR_mapper():
         gls2.right_labels       = True
         gls2.left_labels        = False
         gls2.bottom_labels      = False
-        #gls2.ylocator = mticker.FixedLocator([80,85])
         gls1.xlabel_style = {'size': 16}
         gls1.ylabel_style = {'size': 16}
         gls2.xlabel_style = {'size': 16}
@@ -967,13 +963,14 @@ class AR_IVT_tendency_plotter():
         cbar=fig.colorbar(C1, cax=cbar_ax,
                           extend="max",orientation="horizontal")
         cbar.set_ticks([100,250,500])
-        cbar_ax.text(0.5,-3.5,self.met_var+" "+\
+        cbar_ax.text(0.2125,-3.5,"Integrated water vapour transport  "+\
                      self.met_var_dict["units"][self.met_var],
                      fontsize=24,transform=cbar_ax.transAxes)   
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
         fig_name="Fig09_budget_corridors_tendency.png"
         fig.savefig(self.plot_path+fig_name,dpi=300,bbox_inches="tight")
         print("Figure saved as:",self.plot_path+fig_name)
+    
     def plot_tendencies(self):
         if self.only_both_flights:
             self.plot_both_flights()
@@ -1178,11 +1175,20 @@ class AR_IVT_tendency_plotter():
                            cmap="BuPu",vmin=0, vmax=20,
                            transform=ccrs.PlateCarree(), zorder=12)
         
-            if key==2:
-                q_typ=600.0
-                axs[col].quiverkey(quiver,0.36,0.875,q_typ,
-                        label=str(q_typ)+' $\mathrm{kgm}^{-1}\mathrm{s}^{-1}$',
-                        coordinates="axes",labelpos="E",fontproperties={"size":18})
+            if key==0:
+                q_typ=500.0
+                y=[63.5, 61.4, 63.2, 65.6]
+                print("Create Quiverkey")
+                axs[col].quiverkey(quiver,0.6,0.965,q_typ,
+                label=str(q_typ)+' $\mathrm{kgm}^{-1}\mathrm{s}^{-1}$',
+                        coordinates="axes",labelpos="E",fontproperties={"size":12},zorder=100)
+                #axs[col].add_patch(patches.Polygon(xy=list(zip(x,y)),fill=True,
+                #                   linewidth=1, edgecolor='k', facecolor='lightgrey',
+                #                   transform=ccrs.Geodetic(),zorder=5,alpha=0.4))
+                #qk=axs[row, col].quiverkey(quiver,0.4,0.13,q_typ,
+                #label=str(q_typ)+' $\mathrm{kgm}^{-1}\mathrm{s}^{-1}$',
+                #coordinates="axes",labelpos="E",
+                #fontproperties={"size":12},labelcolor="k",zorder=100)
             key+=1
             # Adjust the location of the subplots on the page to make room for the colorbar
         
@@ -1245,8 +1251,6 @@ def run_plot_IVT_tendency(do_plot_tendency=True,
                           aircraft="HALO",interested_flights=[flights[0]],
                           instruments=["radar","radiometer","sonde"])
     haloac3.specify_flights_of_interest(flights)
-    
-    #haloac3.create_directory(directory_types=["data"])
     
     #-------------------------------------------------------------------------#
     # Get the flight data    
