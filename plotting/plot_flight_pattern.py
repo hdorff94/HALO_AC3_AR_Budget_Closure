@@ -28,7 +28,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import warnings
 warnings.filterwarnings("ignore")
 
-
 class HiddenPrints:
     def __enter__(self):
         self._original_stdout = sys.stdout
@@ -269,20 +268,21 @@ def map_3d_radar_view(ax, processed_radar, Dropsondes, radar_ds_mean_z,
     ax.xaxis.pane.set_edgecolor('w')
     ax.yaxis.pane.set_edgecolor('w')
     ax.zaxis.pane.set_edgecolor('w')
-
-    ax.xaxis._axinfo["grid"].update({"linewidth":1,"color":"w"})
-    ax.yaxis._axinfo["grid"].update({"linewidth":2,"color":"w"})
-    ax.zaxis._axinfo["grid"].update({"linewidth":2,"color":"w"})
+    #plt.axis('off')
+    #ax.xaxis._axinfo["grid"].update({"linewidth":1,"color":"w"})
+    #ax.yaxis._axinfo["grid"].update({"linewidth":2,"color":"w"})
+    #ax.zaxis._axinfo["grid"].update({"linewidth":2,"color":"w"})
+    
     ax.xaxis.set_tick_params(width=10,color="grey")
     ax.yaxis.set_tick_params(width=0,color="grey")
-    ax.zaxis.set_tick_params(width=10,color="grey")
+    ax.zaxis.set_tick_params(width=10,color="k")
 
-    ax.set_zlabel("Height (km)",linespacing=3.1)
+    ax.set_zlabel("Height (km)",linespacing=3.1,color="k")
 
     
-    ax.set_xlabel("Longitude (°E)",color="grey")
-    ax.set_ylabel("Latitude (°N)",color="grey")
-    ax.set_zlabel("Height (km)",color="grey")
+    #ax.set_xlabel("Longitude (°E)",color="grey")
+    #ax.set_ylabel("Latitude (°N)",color="grey")
+    #ax.set_zlabel("Height (km)",color="grey")
     ax.view_init(40, 290)  # Set view angle
     ax.set_xlim([-15,10])#[radar_ds["lon"].min(), radar_ds["lon"].max()])
     ax.set_yticks([72,74,76])
@@ -313,7 +313,7 @@ def combined_plot(cfg_dict, radar_ds, Dropsondes,relevant_sondes_dict,
         ax_2d.spines['left'].set_color('none')  # Remove box left spine
         ax_2d.spines['bottom'].set_color('none')  # Remove box bottom spine
         fig_name=os.getcwd()+"/../plots/Fig03_sea_ice_background.png"
-        fig.savefig(fig_name, dpi=300, bbox_inches="tight")
+        fig.savefig(fig_name, dpi=600, bbox_inches="tight")
         print("Figure saved as:", fig_name)
         # Map only the z values onto the 3D plot
     if add_3d:
@@ -323,10 +323,13 @@ def combined_plot(cfg_dict, radar_ds, Dropsondes,relevant_sondes_dict,
         map_3d_radar_view(ax_3d, radar_ds, Dropsondes, z_mean, 
             relevant_sondes_dict,inflow_times,internal_times,outflow_times)
         ax_3d.grid(False)
-        ax_3d.spines['top'].set_color('none')  # Remove box top spine
-        ax_3d.spines['right'].set_color('none')  # Remove box right spine
-        ax_3d.spines['left'].set_color('none')  # Remove box left spine
-        ax_3d.spines['bottom'].set_color('none')  # Remove box bottom spine
+        ax_3d.set_xticklabels([])
+        ax_3d.set_yticklabels([])
+        #ax_3d.set_zticklabels([])
+        #ax_3d.spines['top'].set_color('none')  # Remove box top spine
+        #ax_3d.spines['right'].set_color('none')  # Remove box right spine
+        #ax_3d.spines['left'].set_color('none')  # Remove box left spine
+        #ax_3d.spines['bottom'].set_color('none')  # Remove box bottom spine
         
         fig_name=os.getcwd()+"/../plots/fig03_radar.png"
         fig.savefig(fig_name,dpi=300,transparent=True)

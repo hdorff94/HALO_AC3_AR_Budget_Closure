@@ -41,9 +41,10 @@ except:
     from moisturebudget import Moisture_Budget,Moisture_Convergence, Moisture_Budget_Plots
 class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
     """
-    This is the major plotting class for all HALO-(AC)3 moisture budget 
-    components. It is mainly designed for the second manuscript of the PhD of 
-    Henning Dorff. This study determines all moisture budget components for
+    This is the major plotting class for all HALO-(AC)3 
+    moisture budget components. It is mainly designed for the
+    second manuscript of the PhD of Henning Dorff.
+    This study determines all moisture budget components for
     an AR event and assesses the budget equation closure.
     
     """
@@ -343,7 +344,7 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         print("Figure saved as:", self.plot_path+fig_name)
         
     def updt_plot_component_tendency(self,with_residuals=False,
-                                     save_as_manuscript_fig=True):
+            defense_style=False,save_as_manuscript_fig=True):
         matplotlib.rcParams.update({"font.size":20})
         budget_components_fig=plt.figure(figsize=(12,6))
         ax1=budget_components_fig.add_subplot(111)
@@ -353,15 +354,20 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         ax1.yaxis.set_tick_params(width=2,length=4)
         marker_size=18
         # Local change IWV
-        ax1.errorbar([0.7,1.7,2.7,3.7],self.budget_df["IWV_dt"].values,
-            yerr=self.budget_df["IWV_dt_unc"], marker='v', mfc='grey',
-            mec='black', ecolor="black",ms=marker_size+2,
-            lw=2,mew=1,ls="",label="$\delta IWV/ \delta t$",barsabove=True)
+        ax1.errorbar([0.7,1.7,2.7,3.7],
+            self.budget_df["IWV_dt"].values,
+            yerr=self.budget_df["IWV_dt_unc"], 
+            marker='v', mfc='grey', mec='black', 
+            ecolor="black",ms=marker_size+2,lw=2,mew=1,ls="",
+            label="$\dfrac{\delta}{\delta t} (IWV)$",
+            barsabove=True)
         # Evaporation
-        ax1.errorbar([0.9,1.9,2.9,3.9], self.budget_df["Evap"].values,
-            yerr=self.budget_df["Evap_unc"], marker='s',
-            mfc='red',mec='black', ecolor="black",lw=2,
-            ms=marker_size, mew=1,ls="",label="$E$",barsabove=True)
+        ax1.errorbar([0.9,1.9,2.9,3.9], 
+            self.budget_df["Evap"].values,
+            yerr=self.budget_df["Evap_unc"], 
+            marker='s',mfc='red',mec='black', ecolor="black",
+            lw=2,ms=marker_size, mew=1,ls="",label="$E$",
+            barsabove=True)
         # Precipitation
         ax1.errorbar([1,2,3,4],-1*self.budget_df["Precip"].values,
             yerr=[self.budget_df["Precip_max"].values-\
@@ -374,23 +380,29 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
                      # ---> think about direction and sign of errorbars
             
         # Mass divergence
+        IDIV_label="$-IDIV_{\mathrm{mass}}$"
+        if defense_style:
+            IDIV_label="$-IDIV$"
         ax1.errorbar(np.array([1.1,2.1,3.1,4.1]),
             self.budget_df["DIV_mass"].values,
             yerr=self.budget_df["DIV_mass_unc"].values,marker="s",
             mfc="teal",ls="",ms=marker_size,mew=1,markeredgecolor="k",
-            lw=2,ecolor="k",label="$-IDIV_{\mathrm{mass}}$",
+            lw=2,ecolor="k",label=IDIV_label,
             barsabove=True)
         
             #yerr=[mass_div_series_max-mass_div_series,mass_div_series-mass_div_series_min],
             
         # Moisture Advection
+        IADV_label="$IADV_{\mathrm{q}}$"
+        if defense_style:
+            IADV_label="$IADV$"
         ax1.errorbar(np.array([1.2,2.2,3.2,4.2]),
                      self.budget_df["ADV_q"].values,
             yerr=self.budget_df["ADV_q_unc"],
             #yerr=[adv_q_series_max-adv_q_series,adv_q_series-adv_q_series_min],
             marker="s",ms=marker_size,mew=1,mfc="darkgreen",ls="",
             markeredgecolor="k",ecolor="k",lw=2,
-            label="$IADV_{\mathrm{q}}$",barsabove=True)
+            label=IADV_label,barsabove=True)
         #Residuals
         if with_residuals:
             ax1.errorbar(np.array([1.3,2.3,3.3,4.3]),
@@ -435,7 +447,9 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
                                       dpi=300,bbox_inches="tight")
         print("Figure saved as:",self.plot_path+fig_name)
     
-    def plot_budget_residuals(self,save_as_manuscript_plot=True):
+    def plot_budget_residuals(self,with_residuals=True,
+            save_format=".pdf",defense_style=False,
+            save_as_manuscript_plot=True):
         """
         This routine plots the resiudals emerging from
         the moisture budget closure for all sectors
@@ -443,11 +457,7 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
     
         matplotlib.rcParams.update({"font.size":20})
         residuals_fig, ax = plt.subplots(1,1,figsize=(12,6))
-        ax.errorbar(np.array([1,2,3,4]),self.budget_df["residual"],
-                yerr=self.budget_df["residual_unc"],marker="X",mfc="red",
-                mec="k",ecolor="darkred",lw=4,ms=20,
-                mew=2,ls="")
-    
+        
         ax.axhline(y=0,ls="--",lw=1,color="k")
         ax.set_ylabel("Moisture Budget \nContribution ($\mathrm{mm\,h}^{-1}$)")
         ax.set_xticks([1,2,3,4])
@@ -460,7 +470,7 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
         ax.bar([0.75,1.75,2.75,3.75],self.budget_df["IWV_dt"],
                width=0.1,edgecolor="white",
                yerr=self.budget_df["IWV_dt_unc"],
-               label="$\delta IWV/ \delta t$",
+               label="$\dfrac{\delta}{\delta t} (IWV)$",
                color="grey",alpha=0.5)
         ax.bar([0.85,1.85,2.85,3.85],
                self.budget_df["Evap"],width=0.1,edgecolor="white",
@@ -471,28 +481,44 @@ class HALO_AC3_Budget_Plots(Moisture_Budget_Plots):
                yerr=(self.budget_df["Precip_max"]-\
                     self.budget_df["Precip_min"])/2,
                label="$-P$",color="lightblue",alpha=0.5)
-        
+        IDIV_label="$-IDIV_{\mathrm{mass}}$"
+        if defense_style:
+            IDIV_label="$-IDIV$"
         ax.bar([1.05,2.05,3.05,4.05],self.budget_df["DIV_mass"],
                width=0.1,edgecolor="white",
                yerr=self.budget_df["DIV_mass_unc"],
-               label="$-IDIV_{\mathrm{mass}}$",
+               label=IDIV_label,
                color="teal",alpha=0.5)
-            
+        IADV_label="$IADV_{\mathrm{q}}$"
+        if defense_style:
+            IADV_label="$IADV$"
         ax.bar([1.15,2.15,3.15,4.15],self.budget_df["ADV_q"],
                width=0.1,edgecolor="white",
                yerr=self.budget_df["ADV_q_unc"],
-               label="$IADV_{\mathrm{q}}$",
+               label=IADV_label,
                color="lightgreen",alpha=0.5)
-        
+        if with_residuals:
+            ax.errorbar(np.array([1,2,3,4]),self.budget_df["residual"],
+                yerr=self.budget_df["residual_unc"],marker="X",mfc="red",
+                mec="k",ecolor="darkred",lw=4,ms=20,label="$\epsilon$",
+                mew=2,ls="")
+    
         
         ax.set_ylim([-1,1.5])
         ax.set_yticks([-1,-.5,0,.5,1,1.5])
-        ax.legend(loc="lower right",ncol=5,
-                  frameon=True,fontsize=16)
+        anchor_box=[0.88,-.04]
+        ncol=5
+        if with_residuals:
+            anchor_box=[1.0,-0.04]
+            ncol=6
+        ax.legend(loc="lower right",bbox_to_anchor=anchor_box,
+                  ncol=ncol,frameon=True,fontsize=15)
         
         sns.despine(offset=10)
-        file_end=".pdf"
+        file_end=save_format
         fig_name="HALO_Budget_residual_tendency"
+        if not with_residuals:
+            fig_name+="_without_residuals"
         fig_name+=file_end
         if save_as_manuscript_plot:
             fig_name="Fig13_"+fig_name

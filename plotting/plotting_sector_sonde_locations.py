@@ -18,7 +18,7 @@ import reanalysis as Reanalysis
 
 def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
          internal_sondes_dict,snd_halo_icon_hmp,plot_path,
-         add_other_sectors=False,add_other_sondes=False):
+         add_other_sectors=False,add_other_sondes=False,defense_style=False):
     """
     
 
@@ -136,7 +136,8 @@ def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
             marker="v",s=100,color="orange",edgecolor="k",
            transform=ccrs.PlateCarree(),zorder=11)
     
-    ax1.scatter(Dropsondes["Lon"].iloc[relevant_sondes_dict["cold_sector"]["in"]],
+    if not defense_style:
+        ax1.scatter(Dropsondes["Lon"].iloc[relevant_sondes_dict["cold_sector"]["in"]],
             Dropsondes["Lat"].iloc[relevant_sondes_dict["cold_sector"]["in"]],
            marker="v",s=100,color="blue",edgecolor="k",
            transform=ccrs.PlateCarree(),zorder=11)
@@ -191,7 +192,8 @@ def main(flight,ar_of_day,ds,halo_df,Dropsondes,relevant_sondes_dict,
     cb=map_fig.colorbar(C1,cax=axins1)
     cb.set_label("$ div\,IVT\,"+" "+met_var_dict["units"]["IVT_conv"])
     cb.set_ticks([-1.0,0,1.0])
-    fig_name="Fig15_"+fig_name
+    if not defense_style:
+        fig_name="Fig15_"+fig_name
     fig_plot_path=plot_path+fig_name
     map_fig.savefig(fig_plot_path,dpi=300,bbox_inches="tight")
     print("Figure saved as:",fig_plot_path)
